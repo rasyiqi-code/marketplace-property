@@ -1,0 +1,143 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { PropertyInput, createProperty } from '@/actions/properties';
+import { CheckCircle2 } from 'lucide-react';
+
+// Steps
+import { StepBasicInfo } from './StepBasicInfo';
+import { StepDetails } from './StepDetails';
+import { StepMedia } from './StepMedia';
+import { StepVerification } from './StepVerification';
+import { LivePreview } from './LivePreview';
+
+const STEPS = [
+    { title: 'Info Dasar', icon: '1' },
+    { title: 'Detail', icon: '2' },
+    { title: 'Media', icon: '3' },
+    { title: 'Verifikasi', icon: '4' },
+];
+
+export function PostAdWizard() {
+    const router = useRouter();
+    const [currentStep, setCurrentStep] = useState(0);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
+
+    const [formData, setFormData] = useState<PropertyInput>({
+        title: '',
+        description: '',
+        price: 0,
+        location: '',
+        address: '',
+        bedrooms: 1,
+        bathrooms: 1,
+        area: 45,
+        type: 'Rumah',
+        status: 'sale',
+        imageUrl: '',
+    });
+
+    const updateFormData = (updates: Partial<PropertyInput>) => {
+        setFormData((prev) => ({ ...prev, ...updates }));
+    };
+
+    const nextStep = () => setCurrentStep((p) => Math.min(p + 1, STEPS.length - 1));
+    const prevStep = () => setCurrentStep((p) => Math.max(0, p - 1));
+
+    const handleSubmit = async () => {
+        setIsLoading(true);
+        try {
+            await createProperty(formData);
+            setIsSuccess(true);
+            setTimeout(() => {
+                router.push('/search?sort=newest');
+            }, 2000);
+        } catch (err) {
+            console.error(err);
+            alert('Gagal menyimpan properti.');
+            setIsLoading(false);
+        }
+    };
+
+    if (isSuccess) {
+        return (
+            <div className="bg-white rounded-xl p-12 text-center border border-gray-100 flex flex-col items-center justify-center shadow-lg animate-in zoom-in duration-300">
+                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
+                    <CheckCircle2 className="text-green-600 w-10 h-10" />
+                </div>
+                <h3 className="text-3xl font-bold font-heading text-gray-900 mb-3">Selamat! Iklan Tayang.</h3>
+                <p className="text-gray-600 text-lg">Properti Anda kini sudah dapat dilihat oleh jutaan pencari properti.</p>
+                <p className="text-sm text-gray-400 mt-8">Mengalihkan ke halaman pencarian...</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Main Content - Form */}
+            <div className="lg:col-span-8 space-y-8">
+                {/* Progress Bar */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <div className="relative">
+                        <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-100 -translate-y-1/2 z-0"></div>
+                        <div
+                            className="absolute top-1/2 left-0 h-1 bg-primary -translate-y-1/2 z-0 transition-all duration-500 ease-in-out"
+                            style={{ width: `${(currentStep / (STEPS.length - 1)) * 100}%` }}
+                        ></div>
+                        <div className="relative z-10 flex justify-between">
+                            {STEPS.map((step, idx) => (
+                                <div key={idx} className="flex flex-col items-center gap-2">
+                                    <div
+                                        className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${idx <= currentStep ? 'bg-primary text-white scale-110' : 'bg-gray-200 text-gray-500'
+                                            }`}
+                                    >
+                                        {idx + 1}
+                                    </div>
+                                    <span className={`text-xs font-medium ${idx <= currentStep ? 'text-gray-900' : 'text-gray-400'}`}>
+                                        {step.title}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Step Content */}
+                <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-8 min-h-[400px]">
+                    {currentStep === 0 && <StepBasicInfo data={formData} update={updateFormData} />}
+                    {currentStep === 1 && <StepDetails data={formData} update={updateFormData} />}
+                    {currentStep === 2 && <StepMedia data={formData} update={updateFormData} />}
+                    {currentStep === 3 && <StepVerification data={formData} isLoading={isLoading} onSubmit={handleSubmit} />}
+                </div>
+
+                {/* Navigation Buttons */}
+                <div className="flex justify-between">
+                    <button
+                        onClick={prevStep}
+                        disabled={currentStep === 0}
+                        className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-600 font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                        Kembali
+                    </button>
+                    {currentStep < STEPS.length - 1 ? (
+                        <button
+                            onClick={nextStep}
+                            className="px-8 py-2.5 rounded-lg bg-primary text-white font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
+                        >
+                            Lanjut
+                        </button>
+                    ) : null}
+                </div>
+            </div>
+
+            {/* Sidebar - Live Preview */}
+            <div className="lg:col-span-4">
+                <div className="sticky top-24">
+                    <LivePreview data={formData} />
+                </div>
+            </div>
+        </div>
+    );
+}

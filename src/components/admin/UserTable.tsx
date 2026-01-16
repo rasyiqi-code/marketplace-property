@@ -1,0 +1,94 @@
+'use client';
+
+import { useState } from 'react';
+import { UserDTO, deleteUser } from '@/actions/users';
+import { Trash2, UserCog } from 'lucide-react';
+
+interface UserTableProps {
+    users: UserDTO[];
+}
+
+export function UserTable({ users: initialUsers }: UserTableProps) {
+    const [users, setUsers] = useState(initialUsers);
+    const [isDeleting, setIsDeleting] = useState<string | null>(null);
+
+    const handleDelete = async (id: string) => {
+        if (!confirm('Hapus pengguna ini? Semua data properti mereka juga akan terhapus.')) return;
+
+        setIsDeleting(id);
+        try {
+            await deleteUser(id);
+            setUsers((prev) => prev.filter((u) => u.id !== id));
+        } catch (error) {
+            console.error('Failed to delete user:', error);
+            alert('Gagal menghapus pengguna.');
+        } finally {
+            setIsDeleting(null);
+        }
+    };
+
+    return (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                    <thead className="bg-gray-50 text-gray-600 font-medium border-b border-gray-100">
+                        <tr>
+                            <th className="px-6 py-4">Nama</th>
+                            <th className="px-6 py-4">Role</th>
+                            <th className="px-6 py-4">Properti</th>
+                            <th className="px-6 py-4">Bergabung</th>
+                            <th className="px-6 py-4">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                        {users.map((user) => (
+                            <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
+                                <td className="px-6 py-4">
+                                    <div className="flex flex-col">
+                                        <span className="font-medium text-gray-900">{user.name}</span>
+                                        <span className="text-xs text-gray-400">{user.email}</span>
+                                    </div>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <span
+                                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${user.role === 'ADMIN'
+                                                ? 'bg-purple-50 text-purple-700'
+                                                : 'bg-blue-50 text-blue-700'
+                                            }`}
+                                    >
+                                        {user.role === 'ADMIN' && <UserCog className="w-3 h-3" />}
+                                        {user.role}
+                                    </span>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <span className="text-gray-600">{user._count.properties} Listing</span>
+                                </td>
+                                <td className="px-6 py-4 text-gray-500">
+                                    {new Date(user.createdAt).toLocaleDateString('id-ID', {
+                                        day: 'numeric',
+                                        month: 'short',
+                                        year: 'numeric',
+                                    })}
+                                </td>
+                                <td className="px-6 py-4">
+                                    <button
+                                        onClick={() => handleDelete(user.id)}
+                                        disabled={isDeleting === user.id || user.role === 'ADMIN'}
+                                        className="p-2 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                                        title={user.role === 'ADMIN' ? 'Tidak bisa menghapus Admin' : 'Hapus User'}
+                                    >
+                                        {isDeleting === user.id ? (
+                                            <span className="animate-spin w-4 h-4 block border-2 border-red-600 border-t-transparent rounded-full"></span>
+                                        ) : (
+                                            <Trash2 className="w-4 h-4" />
+                                        )}
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+}
