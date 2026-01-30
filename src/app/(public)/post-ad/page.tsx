@@ -1,6 +1,14 @@
 import { PostAdWizard } from '@/components/post-ad/PostAdWizard';
+import { stackServerApp } from '@/lib/stack';
+import { redirect } from 'next/navigation';
 
-export default function PostAdPage() {
+export default async function PostAdPage() {
+    const user = await stackServerApp.getUser();
+
+    if (!user) {
+        redirect('/handler/sign-in');
+    }
+
     return (
         <div className="min-h-screen bg-neutral-50 font-sans">
 

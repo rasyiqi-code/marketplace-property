@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { Inter, Outfit } from 'next/font/google';
 import './globals.css';
-// Navbar and Footer moved to (public)/layout.tsx
-// import { Navbar } from '@/components/Navbar';
-// import { Footer } from '@/components/Footer';
+import { ThemeRegistry } from '@/components/ThemeRegistry';
+import { StackProvider, StackTheme } from "@stackframe/stack";
+import { stackServerApp } from "@/lib/stack";
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 const outfit = Outfit({ subsets: ['latin'], variable: '--font-heading' });
@@ -13,6 +13,12 @@ export const metadata: Metadata = {
   description: 'Marketplace properti terpercaya di Indonesia.',
 };
 
+/**
+ * RootLayout - Layout utama aplikasi
+ * Wraps dengan:
+ * - StackProvider untuk autentikasi
+ * - ThemeRegistry untuk Material UI
+ */
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -21,7 +27,13 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body className={`${inter.variable} ${outfit.variable}`}>
-        {children}
+        <StackProvider app={stackServerApp}>
+          <StackTheme>
+            <ThemeRegistry>
+              {children}
+            </ThemeRegistry>
+          </StackTheme>
+        </StackProvider>
       </body>
     </html>
   );

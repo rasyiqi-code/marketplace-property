@@ -1,24 +1,40 @@
-import { auth, signOut } from '@/auth';
+import { stackServerApp } from '@/lib/stack';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
+/**
+ * AdminLayout - Layout untuk admin dashboard
+ * Menggunakan Stack Auth untuk autentikasi
+ * 
+ * TODO: Implementasi role checking melalui Stack Auth teams/permissions
+ * Saat ini hanya memeriksa autentikasi
+ */
 export default async function AdminLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    const session = await auth();
+    const user = await stackServerApp.getUser();
 
-    if (!session?.user || session.user.role !== 'ADMIN') {
-        redirect('/login'); // Middleware handles this too, but double safety
+    // Redirect ke login jika belum autentikasi
+    if (!user) {
+        redirect('/handler/sign-in');
     }
+
+    // TODO: Cek role ADMIN melalui Stack Auth metadata/teams
+    // Untuk saat ini, semua authenticated user bisa akses admin
+    // Nantinya bisa menggunakan user.teamPermissions atau custom metadata
+
+    const displayName = user.displayName || user.primaryEmail?.split('@')[0] || 'Admin';
 
     return (
         <div className="min-h-screen bg-slate-900 font-sans flex">
             {/* Sidebar */}
             <aside className="w-64 bg-slate-900 border-r border-slate-800 hidden lg:block fixed h-full z-10 text-white">
                 <div className="h-16 flex items-center px-6 border-b border-slate-800">
-                    <Link href="/" className="font-heading text-xl font-bold text-white tracking-wider">ProEstate <span className="text-xs bg-red-600 px-2 py-0.5 rounded ml-2">ADMIN</span></Link>
+                    <Link href="/" className="font-heading text-xl font-bold text-white tracking-wider">
+                        ProEstate <span className="text-xs bg-red-600 px-2 py-0.5 rounded ml-2">ADMIN</span>
+                    </Link>
                 </div>
                 <div className="p-4 space-y-1">
                     <Link href="/admin" className="flex items-center px-4 py-3 bg-slate-800 text-white font-medium rounded-lg">
@@ -38,23 +54,19 @@ export default async function AdminLayout({
                 <div className="absolute bottom-0 left-0 w-full p-4 border-t border-slate-800">
                     <div className="flex items-center gap-3 mb-4 px-2">
                         <div className="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center text-slate-300 font-bold text-lg">
-                            A
+                            {displayName[0]?.toUpperCase() || 'A'}
                         </div>
                         <div className="overflow-hidden">
-                            <p className="text-sm font-bold text-slate-200 truncate">{session.user.name}</p>
+                            <p className="text-sm font-bold text-slate-200 truncate">{displayName}</p>
                             <p className="text-xs text-slate-500 truncate">Administrator</p>
                         </div>
                     </div>
-                    <form
-                        action={async () => {
-                            'use server';
-                            await signOut();
-                        }}
+                    <Link
+                        href="/handler/sign-out"
+                        className="w-full block text-center py-2 px-4 border border-slate-700 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 transition-colors"
                     >
-                        <button className="w-full py-2 px-4 border border-slate-700 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 transition-colors">
-                            Logout
-                        </button>
-                    </form>
+                        Logout
+                    </Link>
                 </div>
             </aside>
 

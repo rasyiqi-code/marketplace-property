@@ -1,6 +1,6 @@
 'use client';
 
-import { PropertyInput } from '@/actions/properties';
+import { PropertyInput } from '@/lib/data/properties';
 import { Loader2 } from 'lucide-react';
 
 interface StepProps {

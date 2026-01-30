@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { PropertyInput, createProperty } from '@/actions/properties';
+import { PropertyInput } from '@/lib/data/properties';
 import { CheckCircle2 } from 'lucide-react';
 
 // Steps
@@ -19,13 +19,19 @@ const STEPS = [
     { title: 'Verifikasi', icon: '4' },
 ];
 
-export function PostAdWizard() {
+interface PostAdWizardProps {
+    initialData?: PropertyInput;
+    isEditMode?: boolean;
+    propertyId?: string;
+}
+
+export function PostAdWizard({ initialData, isEditMode = false, propertyId }: PostAdWizardProps) {
     const router = useRouter();
     const [currentStep, setCurrentStep] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
 
-    const [formData, setFormData] = useState<PropertyInput>({
+    const [formData, setFormData] = useState<PropertyInput>(initialData || {
         title: '',
         description: '',
         price: 0,
@@ -49,14 +55,43 @@ export function PostAdWizard() {
     const handleSubmit = async () => {
         setIsLoading(true);
         try {
-            await createProperty(formData);
-            setIsSuccess(true);
-            setTimeout(() => {
-                router.push('/search?sort=newest');
-            }, 2000);
-        } catch (err) {
+            if (isEditMode && propertyId) {
+                // Update via API
+                const res = await fetch(`/api/properties/${propertyId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData),
+                });
+
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    throw new Error(errorData.error || 'Gagal mengupdate properti');
+                }
+
+                // Redirect directly for edit mode
+                router.push('/my-properties');
+                router.refresh();
+            } else {
+                // Create via API
+                const res = await fetch('/api/properties', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData),
+                });
+
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    throw new Error(errorData.error || 'Gagal membuat properti');
+                }
+
+                setIsSuccess(true);
+                setTimeout(() => {
+                    router.push('/my-properties');
+                }, 2000);
+            }
+        } catch (err: any) {
             console.error(err);
-            alert('Gagal menyimpan properti.');
+            alert(err.message || 'Gagal menyimpan properti.');
             setIsLoading(false);
         }
     };

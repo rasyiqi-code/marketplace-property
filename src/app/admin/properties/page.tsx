@@ -1,4 +1,4 @@
-import { getProperties } from '@/actions/properties';
+import { getProperties } from '@/lib/data/properties';
 import { PropertyTable } from '@/components/admin/PropertyTable';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';

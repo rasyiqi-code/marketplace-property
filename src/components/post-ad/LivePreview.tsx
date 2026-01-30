@@ -1,6 +1,6 @@
 'use client';
 
-import { PropertyInput } from '@/actions/properties';
+import { PropertyInput } from '@/lib/data/properties';
 import Image from 'next/image';
 import { MapPin, Bed, Bath, Square, Loader2 } from 'lucide-react';
 

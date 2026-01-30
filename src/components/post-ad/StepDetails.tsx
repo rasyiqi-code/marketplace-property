@@ -1,6 +1,6 @@
 'use client';
 
-import { PropertyInput } from '@/actions/properties';
+import { PropertyInput } from '@/lib/data/properties';
 import { Bed, Bath, Square, DollarSign } from 'lucide-react';
 
 interface StepProps {

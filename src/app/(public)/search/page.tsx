@@ -1,6 +1,6 @@
 import { FilterSidebar } from '@/components/filters/FilterSidebar';
-import { PropertyCard } from '@/components/PropertyCard';
-import { getProperties } from '@/actions/properties';
+import { PropertyCardMUI } from '@/components/PropertyCardMUI';
+import { getProperties } from '@/lib/data/properties';
 
 export default async function SearchPage({
     searchParams,
@@ -45,7 +45,7 @@ export default async function SearchPage({
                         {properties.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                                 {properties.map((property) => (
-                                    <PropertyCard key={property.id} property={property} />
+                                    <PropertyCardMUI key={property.id} property={property} />
                                 ))}
                             </div>
                         ) : (

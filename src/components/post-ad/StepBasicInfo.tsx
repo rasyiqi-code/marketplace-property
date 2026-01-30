@@ -1,6 +1,6 @@
 'use client';
 
-import { PropertyInput } from '@/actions/properties';
+import { PropertyInput } from '@/lib/data/properties';
 
 interface StepProps {
     data: PropertyInput;
@@ -37,8 +37,8 @@ export function StepBasicInfo({ data, update }: StepProps) {
                         <button
                             onClick={() => update({ status: 'sale' })}
                             className={`flex-1 py-2 text-sm font-medium rounded-md transition-all shadow-sm ${data.status === 'sale'
-                                    ? 'bg-white text-primary border border-gray-200 shadow-sm'
-                                    : 'text-gray-500 hover:text-gray-700'
+                                ? 'bg-white text-primary border border-gray-200 shadow-sm'
+                                : 'text-gray-500 hover:text-gray-700'
                                 }`}
                         >
                             Dijual
@@ -46,8 +46,8 @@ export function StepBasicInfo({ data, update }: StepProps) {
                         <button
                             onClick={() => update({ status: 'rent' })}
                             className={`flex-1 py-2 text-sm font-medium rounded-md transition-all shadow-sm ${data.status === 'rent'
-                                    ? 'bg-white text-primary border border-gray-200 shadow-sm'
-                                    : 'text-gray-500 hover:text-gray-700'
+                                ? 'bg-white text-primary border border-gray-200 shadow-sm'
+                                : 'text-gray-500 hover:text-gray-700'
                                 }`}
                         >
                             Disewa

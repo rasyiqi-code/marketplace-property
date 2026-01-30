@@ -1,14 +1,18 @@
 import { MapPin, Bed, Bath, Square, User, Share2, Heart, Phone, Mail } from 'lucide-react';
-import { getPropertyById, getRelatedProperties } from '@/actions/properties';
-import { PropertyCard } from '@/components/PropertyCard';
+import { getPropertyById, getRelatedProperties } from '@/lib/data/properties';
+import { PropertyCardMUI } from '@/components/PropertyCardMUI';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+
 import DynamicMap from '@/components/DynamicMap';
+import { TransactionButton } from '@/components/TransactionButton';
+import { stackServerApp } from '@/lib/stack';
 
 export default async function PropertyDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const property = await getPropertyById(id);
+    const user = await stackServerApp.getUser();
 
     if (!property) {
         notFound();
@@ -184,6 +188,12 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
                                     </div>
 
                                     <div className="space-y-3">
+                                        <TransactionButton
+                                            propertyId={property.id}
+                                            isOwner={property.userId === user?.id}
+                                            status={property.status}
+                                            price={Number(property.price)}
+                                        />
                                         <button className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
                                             <Phone size={20} />
                                             WhatsApp
@@ -214,7 +224,7 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
                             <h2 className="text-2xl font-bold font-heading mb-6 text-gray-900">Properti Serupa</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {relatedProperties.map((prop) => (
-                                    <PropertyCard key={prop.id} property={prop} />
+                                    <PropertyCardMUI key={prop.id} property={prop} />
                                 ))}
                             </div>
                         </div>

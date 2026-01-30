@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createProperty, PropertyInput } from '@/actions/properties';
+import { PropertyInput } from '@/lib/data/properties';
 import { CheckCircle2, Loader2, UploadCloud } from 'lucide-react';
 
 export function PostAdForm() {
@@ -40,14 +40,24 @@ export function PostAdForm() {
         setError(null);
 
         try {
-            await createProperty(formData);
+            const res = await fetch('/api/properties', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error || 'Gagal menyimpan properti');
+            }
+
             setIsSuccess(true);
             setTimeout(() => {
-                router.push('/search?sort=newest'); // Redirect to search page showing new listings
+                router.push('/search?sort=newest');
             }, 2000);
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            setError('Gagal menyimpan properti. Silakan coba lagi.');
+            setError(err.message || 'Gagal menyimpan properti. Silakan coba lagi.');
             setIsLoading(false);
         }
     };

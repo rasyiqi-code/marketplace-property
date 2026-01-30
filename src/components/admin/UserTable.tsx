@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { UserDTO, deleteUser } from '@/actions/users';
-import { Trash2, UserCog } from 'lucide-react';
+import { UserDTO } from '@/lib/data/users';
+import { Trash2, UserCog, Check, X, Shield } from 'lucide-react';
 
 interface UserTableProps {
     users: UserDTO[];
@@ -11,19 +11,54 @@ interface UserTableProps {
 export function UserTable({ users: initialUsers }: UserTableProps) {
     const [users, setUsers] = useState(initialUsers);
     const [isDeleting, setIsDeleting] = useState<string | null>(null);
+    const [editingRole, setEditingRole] = useState<string | null>(null);
+    const [selectedRole, setSelectedRole] = useState<string>('');
+    const [isSavingRole, setIsSavingRole] = useState(false);
 
     const handleDelete = async (id: string) => {
         if (!confirm('Hapus pengguna ini? Semua data properti mereka juga akan terhapus.')) return;
 
         setIsDeleting(id);
         try {
-            await deleteUser(id);
+            const res = await fetch(`/api/admin/users/${id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Gagal menghapus pengguna');
+
             setUsers((prev) => prev.filter((u) => u.id !== id));
         } catch (error) {
             console.error('Failed to delete user:', error);
             alert('Gagal menghapus pengguna.');
         } finally {
             setIsDeleting(null);
+        }
+    };
+
+    const startEditRole = (user: UserDTO) => {
+        setEditingRole(user.id);
+        setSelectedRole(user.role);
+    };
+
+    const cancelEditRole = () => {
+        setEditingRole(null);
+        setSelectedRole('');
+    };
+
+    const saveRole = async (id: string) => {
+        setIsSavingRole(true);
+        try {
+            const res = await fetch(`/api/admin/users/${id}/role`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ role: selectedRole }),
+            });
+            if (!res.ok) throw new Error('Gagal mengubah role');
+
+            setUsers(users.map(u => u.id === id ? { ...u, role: selectedRole } : u));
+            setEditingRole(null);
+        } catch (error) {
+            console.error('Failed to update role:', error);
+            alert('Gagal mengubah role.');
+        } finally {
+            setIsSavingRole(false);
         }
     };
 
@@ -50,15 +85,46 @@ export function UserTable({ users: initialUsers }: UserTableProps) {
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <span
-                                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${user.role === 'ADMIN'
+                                    {editingRole === user.id ? (
+                                        <div className="flex items-center gap-2">
+                                            <select
+                                                value={selectedRole}
+                                                onChange={(e) => setSelectedRole(e.target.value)}
+                                                className="text-xs border rounded px-2 py-1 outline-none focus:ring-2 focus:ring-primary/20"
+                                                disabled={isSavingRole}
+                                            >
+                                                <option value="USER">USER</option>
+                                                <option value="ADMIN">ADMIN</option>
+                                                <option value="AGENT">AGENT</option>
+                                            </select>
+                                            <button
+                                                onClick={() => saveRole(user.id)}
+                                                disabled={isSavingRole}
+                                                className="text-green-600 hover:text-green-700 p-1"
+                                            >
+                                                <Check className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={cancelEditRole}
+                                                disabled={isSavingRole}
+                                                className="text-red-500 hover:text-red-600 p-1"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <button
+                                            onClick={() => startEditRole(user)}
+                                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium hover:bg-opacity-80 transition-opacity ${user.role === 'ADMIN'
                                                 ? 'bg-purple-50 text-purple-700'
                                                 : 'bg-blue-50 text-blue-700'
-                                            }`}
-                                    >
-                                        {user.role === 'ADMIN' && <UserCog className="w-3 h-3" />}
-                                        {user.role}
-                                    </span>
+                                                }`}
+                                            title="Klik untuk ubah role"
+                                        >
+                                            {user.role === 'ADMIN' && <UserCog className="w-3 h-3" />}
+                                            {user.role}
+                                        </button>
+                                    )}
                                 </td>
                                 <td className="px-6 py-4">
                                     <span className="text-gray-600">{user._count.properties} Listing</span>
