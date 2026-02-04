@@ -85,11 +85,6 @@ export async function POST(request: Request) {
             },
         });
 
-        // Assign to a random agent for now or handle agent linkage differently
-        const agent = await prisma.agent.findFirst();
-        if (!agent) {
-            return NextResponse.json({ error: 'System Error: No agent profile found' }, { status: 500 });
-        }
 
         const property = await prisma.property.create({
             data: {
@@ -104,7 +99,6 @@ export async function POST(request: Request) {
                 type,
                 status,
                 images: imageUrl,
-                agentId: agent.id,
                 userId: userId,
                 featured: false,
                 landArea: landArea ? Number(landArea) : null,

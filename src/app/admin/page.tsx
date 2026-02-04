@@ -1,9 +1,15 @@
 import { prisma } from '@/lib/db';
+import Link from 'next/link';
+import { Users, Home, ArrowUpCircle, Clock } from 'lucide-react';
 
 export default async function AdminDashboardPage() {
     const userCount = await prisma.user.count();
     const propertyCount = await prisma.property.count();
-    const agentCount = await prisma.agent.count();
+
+    // Count pending upgrade requests
+    const pendingUpgradeRequests = await (prisma.accountUpgradeRequest.count({
+        where: { status: 'PENDING' }
+    }) as any);
 
     return (
         <div>
@@ -14,17 +20,51 @@ export default async function AdminDashboardPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                    <h3 className="font-bold text-gray-500 text-sm uppercase mb-2">Total Users</h3>
+                    <div className="flex items-center gap-3 mb-2">
+                        <Users className="text-primary" size={20} />
+                        <h3 className="font-bold text-gray-500 text-sm uppercase">Total Users</h3>
+                    </div>
                     <p className="text-4xl font-bold text-primary">{userCount}</p>
                 </div>
+
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                    <h3 className="font-bold text-gray-500 text-sm uppercase mb-2">Total Properties</h3>
+                    <div className="flex items-center gap-3 mb-2">
+                        <Home className="text-primary" size={20} />
+                        <h3 className="font-bold text-gray-500 text-sm uppercase">Total Properties</h3>
+                    </div>
                     <p className="text-4xl font-bold text-primary">{propertyCount}</p>
                 </div>
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                    <h3 className="font-bold text-gray-500 text-sm uppercase mb-2">Total Agents</h3>
-                    <p className="text-4xl font-bold text-primary">{agentCount}</p>
-                </div>
+
+                {/* Upgrade Requests Card */}
+                <Link
+                    href="/admin/upgrade-requests"
+                    className="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 rounded-xl shadow-sm border-2 border-yellow-200 hover:border-yellow-300 transition-all hover:shadow-md group"
+                >
+                    <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                            <ArrowUpCircle className="text-yellow-600" size={20} />
+                            <h3 className="font-bold text-gray-700 text-sm uppercase">Upgrade Requests</h3>
+                        </div>
+                        {pendingUpgradeRequests > 0 && (
+                            <span className="bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                                {pendingUpgradeRequests}
+                            </span>
+                        )}
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                        <p className="text-4xl font-bold text-yellow-700">{pendingUpgradeRequests}</p>
+                        <p className="text-sm text-yellow-600">pending</p>
+                    </div>
+                    {pendingUpgradeRequests > 0 && (
+                        <div className="mt-3 flex items-center gap-2 text-xs text-yellow-700">
+                            <Clock size={14} />
+                            <span>Membutuhkan review</span>
+                        </div>
+                    )}
+                    <div className="mt-3 text-sm font-bold text-yellow-700 group-hover:text-yellow-800">
+                        Review Requests →
+                    </div>
+                </Link>
             </div>
 
             {/* Recent Activity Mockup */}

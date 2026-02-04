@@ -22,11 +22,16 @@ export interface PropertyDetailDTO extends PropertyDTO {
     description: string;
     address: string;
     userId: string | null;
-    agent: {
-        name: string;
+    seller: {
+        name: string | null;
         email: string;
-        phone: string;
+        phone: string | null;
         photo: string | null;
+        whatsappMessage: string | null;
+        verified: boolean;
+        accountType: string;
+        bio: string | null;
+        company: string | null;
     };
     propertyImages: {
         id: string;

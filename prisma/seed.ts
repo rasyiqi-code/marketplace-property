@@ -10,21 +10,24 @@ const prisma = new PrismaClient();
  */
 async function main() {
     // =========================================================================
-    // AGENT (Agen Properti Profesional)
+    // AGENT USER (User dengan role Agent untuk seeding properti)
     // =========================================================================
-    const agent = await prisma.agent.upsert({
+    const agentUser = await prisma.user.upsert({
         where: { email: 'agent@proestate.com' },
         update: {},
         create: {
+            id: 'seed-agent-id',
             name: 'Budi Santoso',
             email: 'agent@proestate.com',
             phone: '08123456789',
             bio: 'Agen properti berpengalaman 10+ tahun di Jakarta',
             company: 'ProEstate Realty',
             verified: true,
-        },
+            accountType: 'AGENT',
+            role: 'USER',
+        } as any,
     });
-    console.log('✓ Agent created:', agent.email);
+    console.log('✓ Agent User created:', agentUser.email);
 
     // =========================================================================
     // FACILITIES (Master Data)
@@ -195,7 +198,7 @@ async function main() {
             await prisma.property.create({
                 data: {
                     ...prop,
-                    agentId: agent.id,
+                    userId: agentUser.id,
                 },
             });
         }

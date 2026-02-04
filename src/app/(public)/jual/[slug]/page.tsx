@@ -1,11 +1,10 @@
-import { MapPin, User, Phone, Mail } from 'lucide-react';
+import { MapPin, User, Phone, Mail, BadgeCheck } from 'lucide-react';
 import { getPropertyBySlug, getRelatedProperties } from '@/lib/data/properties';
 import { PropertyCardMUI } from '@/components/PropertyCardMUI';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 
-import { TransactionButton } from '@/components/TransactionButton';
 import { PropertyDetailTabs } from '@/components/PropertyDetailTabs';
 import { stackServerApp } from '@/lib/stack';
 
@@ -91,35 +90,60 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
                         <div className="sticky top-24">
                             <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
                                 <div className="p-6">
-                                    <div className="flex items-center gap-4 mb-6">
+                                    <div className="flex items-start gap-4 mb-4">
                                         <div className="relative w-14 h-14 rounded-full overflow-hidden bg-gray-100 border border-primary/20">
-                                            {property.agent.photo ? (
-                                                <Image src={property.agent.photo} alt={property.agent.name} fill className="object-cover" />
+                                            {property.seller.photo ? (
+                                                <Image src={property.seller.photo} alt={property.seller.name || "Seller"} fill className="object-cover" />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-50"><User size={24} /></div>
                                             )}
                                         </div>
-                                        <div>
-                                            <div className="font-bold text-gray-900">{property.agent.name}</div>
-                                            <div className="text-sm text-gray-500">Agen Properti</div>
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2">
+                                                <div className="font-bold text-gray-900">{property.seller.name || 'ProEstate User'}</div>
+                                                {property.seller.verified && (
+                                                    <BadgeCheck className="text-primary" size={18} />
+                                                )}
+                                            </div>
+                                            <div className="text-sm text-gray-500">
+                                                {property.seller.accountType === 'AGENCY' ? 'Agency Properti' :
+                                                    property.seller.accountType === 'AGENT' ? 'Agen Properti' :
+                                                        'Individual'}
+                                            </div>
+                                            {property.seller.company && (
+                                                <div className="text-xs text-gray-400 mt-1">{property.seller.company}</div>
+                                            )}
                                         </div>
                                     </div>
 
+                                    {property.seller.bio && (
+                                        <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                            <p className="text-sm text-gray-600 line-clamp-3">{property.seller.bio}</p>
+                                        </div>
+                                    )}
+
                                     <div className="space-y-3">
-                                        <TransactionButton
-                                            propertyId={property.id}
-                                            isOwner={property.userId === user?.id}
-                                            status={property.status}
-                                            price={Number(property.price)}
-                                        />
-                                        <button className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                                            <Phone size={20} />
-                                            WhatsApp
-                                        </button>
-                                        <button className="w-full bg-white hover:bg-gray-50 text-gray-700 font-bold py-3 px-4 rounded-lg border border-gray-300 flex items-center justify-center gap-2 transition-colors">
+                                        {property.seller.phone ? (
+                                            <a
+                                                href={`https://wa.me/${property.seller.phone.replace(/\D/g, '').replace(/^0/, '62')}?text=${encodeURIComponent(
+                                                    property.seller.whatsappMessage?.replace('{property_title}', property.title) ||
+                                                    `Halo ${property.seller.name || 'Seller'}, saya tertarik dengan properti "${property.title}" yang saya lihat di ProEstate.`
+                                                )}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors text-center"
+                                            >
+                                                <Phone size={20} />
+                                                WhatsApp
+                                            </a>
+                                        ) : null}
+                                        <a
+                                            href={`mailto:${property.seller.email}?subject=${encodeURIComponent(`Tertarik dengan properti: ${property.title}`)}&body=${encodeURIComponent(`Halo ${property.seller.name || 'Seller'},\n\nSaya tertarik dengan properti "${property.title}" yang berada di ${property.location}.\n\nBisa tolong berikan informasi lebih lanjut?`)}`}
+                                            className="w-full bg-white hover:bg-gray-50 text-gray-700 font-bold py-3 px-4 rounded-lg border border-gray-300 flex items-center justify-center gap-2 transition-colors text-center"
+                                        >
                                             <Mail size={20} />
                                             Hubungi via Email
-                                        </button>
+                                        </a>
                                         <button className="w-full text-primary hover:underline text-sm font-medium py-2">
                                             Lihat Listing Lainnya
                                         </button>

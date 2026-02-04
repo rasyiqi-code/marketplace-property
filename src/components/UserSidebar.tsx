@@ -12,11 +12,6 @@ const MENU_ITEMS = [
         icon: <User size={20} />,
     },
     {
-        label: 'Pesanan & Nego',
-        href: '/transactions',
-        icon: <ShoppingCart size={20} />,
-    },
-    {
         label: 'Properti Saya',
         href: '/my-properties',
         icon: <Home size={20} />,

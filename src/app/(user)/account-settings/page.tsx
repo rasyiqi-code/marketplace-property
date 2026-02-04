@@ -1,5 +1,7 @@
 import { AccountSettings } from "@stackframe/stack";
 import { BankSettings } from "@/components/dashboard/BankSettings";
+import { SellerSettings } from "@/components/dashboard/SellerSettings";
+import { SellerProfileSettings } from "@/components/dashboard/SellerProfileSettings";
 
 export default function AccountSettingsPage() {
     return (
@@ -13,7 +15,9 @@ export default function AccountSettingsPage() {
                 <AccountSettings fullPage={false} />
             </div>
 
+            <SellerProfileSettings />
             <BankSettings />
+            <SellerSettings />
         </div>
     );
 }

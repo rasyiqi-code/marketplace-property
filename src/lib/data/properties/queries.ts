@@ -42,14 +42,26 @@ export async function getUserProperties(userId: string): Promise<PropertyDTO[]> 
 }
 
 export async function getPropertyById(id: string): Promise<PropertyDetailDTO | null> {
-    const property = await prisma.property.findUnique({
+    const property = await (prisma.property.findUnique({
         where: { id },
         include: {
-            agent: true,
+            user: {
+                select: {
+                    name: true,
+                    email: true,
+                    phone: true,
+                    photo: true,
+                    whatsappMessage: true,
+                    verified: true,
+                    accountType: true,
+                    bio: true,
+                    company: true
+                } as any
+            },
             propertyImages: { orderBy: { sortOrder: 'asc' } },
             facilities: { include: { facility: true } },
         },
-    });
+    }) as any);
 
     if (!property) return null;
 
@@ -58,24 +70,24 @@ export async function getPropertyById(id: string): Promise<PropertyDetailDTO | n
         description: property.description,
         address: property.address,
         userId: property.userId,
-        agent: property.agent ? {
-            name: property.agent.name,
-            email: property.agent.email,
-            phone: property.agent.phone,
-            photo: property.agent.photo,
-        } : {
-            name: 'ProEstate Agent',
-            email: 'support@proestate.com',
-            phone: '+6281234567890',
-            photo: null,
+        seller: {
+            name: property.user?.name || 'ProEstate User',
+            email: property.user?.email || 'support@proestate.com',
+            phone: property.user?.phone || null,
+            photo: property.user?.photo || null,
+            whatsappMessage: property.user?.whatsappMessage || null,
+            verified: property.user?.verified || false,
+            accountType: property.user?.accountType || 'INDIVIDUAL',
+            bio: property.user?.bio || null,
+            company: property.user?.company || null,
         },
-        propertyImages: property.propertyImages.map(img => ({
+        propertyImages: property.propertyImages.map((img: any) => ({
             id: img.id,
             url: img.url,
             caption: img.caption,
             isPrimary: img.isPrimary,
         })),
-        facilities: property.facilities.map(pf => ({
+        facilities: property.facilities.map((pf: any) => ({
             id: pf.facility.id,
             name: pf.facility.name,
             icon: pf.facility.icon,
@@ -96,7 +108,19 @@ export async function getPropertyBySlug(slug: string, status: string): Promise<P
     let property = await (prisma.property as any).findFirst({
         where: { slug, status },
         include: {
-            agent: true,
+            user: {
+                select: {
+                    name: true,
+                    email: true,
+                    phone: true,
+                    photo: true,
+                    whatsappMessage: true,
+                    verified: true,
+                    accountType: true,
+                    bio: true,
+                    company: true
+                } as any
+            },
             propertyImages: { orderBy: { sortOrder: 'asc' } },
             facilities: { include: { facility: true } },
         },
@@ -107,7 +131,19 @@ export async function getPropertyBySlug(slug: string, status: string): Promise<P
         property = await (prisma.property as any).findFirst({
             where: { id: slug, status },
             include: {
-                agent: true,
+                user: {
+                    select: {
+                        name: true,
+                        email: true,
+                        phone: true,
+                        photo: true,
+                        whatsappMessage: true,
+                        verified: true,
+                        accountType: true,
+                        bio: true,
+                        company: true
+                    } as any
+                },
                 propertyImages: { orderBy: { sortOrder: 'asc' } },
                 facilities: { include: { facility: true } },
             },
@@ -116,7 +152,42 @@ export async function getPropertyBySlug(slug: string, status: string): Promise<P
 
     if (!property) return null;
 
-    return getPropertyById(property.id);
+    return {
+        ...mapToPropertyDTO(property),
+        description: property.description,
+        address: property.address,
+        userId: property.userId,
+        seller: {
+            name: property.user?.name || 'ProEstate User',
+            email: property.user?.email || 'support@proestate.com',
+            phone: property.user?.phone || null,
+            photo: property.user?.photo || null,
+            whatsappMessage: property.user?.whatsappMessage || null,
+            verified: property.user?.verified || false,
+            accountType: property.user?.accountType || 'INDIVIDUAL',
+            bio: property.user?.bio || null,
+            company: property.user?.company || null,
+        },
+        propertyImages: property.propertyImages.map((img: any) => ({
+            id: img.id,
+            url: img.url,
+            caption: img.caption,
+            isPrimary: img.isPrimary,
+        })),
+        facilities: property.facilities.map((pf: any) => ({
+            id: pf.facility.id,
+            name: pf.facility.name,
+            icon: pf.facility.icon,
+        })),
+        landArea: property.landArea,
+        certificate: property.certificate,
+        condition: property.condition,
+        furnishing: property.furnishing,
+        floors: property.floors,
+        mapsEmbed: property.mapsEmbed,
+        videoUrl: property.videoUrl,
+        virtualTourUrl: property.virtualTourUrl,
+    };
 }
 
 export async function getDashboardStats(): Promise<DashboardStats> {

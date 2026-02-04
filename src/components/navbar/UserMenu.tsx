@@ -95,9 +95,6 @@ export function UserMenu({ user }: UserMenuProps) {
                 <MenuItem component={Link} href="/account-settings" onClick={handleClose}>
                     <Person fontSize="small" sx={{ mr: 1.5 }} /> Profil Saya
                 </MenuItem>
-                <MenuItem component={Link} href="/transactions" onClick={handleClose}>
-                    <ShoppingCart fontSize="small" sx={{ mr: 1.5 }} /> Pesanan & Nego
-                </MenuItem>
                 <MenuItem component={Link} href="/my-properties" onClick={handleClose}>
                     <House fontSize="small" sx={{ mr: 1.5 }} /> Properti Saya
                 </MenuItem>

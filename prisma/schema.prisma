@@ -21,27 +21,20 @@ model User {
   bankHolder    String?
   bankName      String?
   inquiries     Inquiry[]
-  offers        Offer[]
-  offerMessages OfferHistory[]
   properties    Property[]
-  purchases     Transaction[]  @relation("BuyerTransactions")
-  sales         Transaction[]  @relation("SellerTransactions")
   wishlists     Wishlist[]
+  whatsappMessage String?
+  
+  // === SELLER/AGENT PROFILE ===
+  accountType     String   @default("INDIVIDUAL")  // INDIVIDUAL | AGENT | AGENCY
+  verified        Boolean  @default(false)          // Verified badge
+  bio             String?                            // Deskripsi profil
+  company         String?                            // Nama perusahaan (untuk agency)
+  photo           String?                            // Foto profil
+  
+  upgradeRequests AccountUpgradeRequest[]
 }
 
-model Agent {
-  id         String     @id @default(cuid())
-  name       String
-  email      String     @unique
-  phone      String
-  photo      String?
-  bio        String?
-  company    String?
-  verified   Boolean    @default(false)
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  properties Property[]
-}
 
 model Property {
   id             String             @id @default(cuid())
@@ -66,20 +59,16 @@ model Property {
   condition      String?
   furnishing     String?
   floors         Int?
-  agentId        String?
-  userId         String?
+  userId         String
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
   mapsEmbed      String?
   videoUrl       String?
   virtualTourUrl String?
   inquiries      Inquiry[]
-  offers         Offer[]
   user           User?              @relation(fields: [userId], references: [id])
-  agent          Agent?             @relation(fields: [agentId], references: [id])
   facilities     PropertyFacility[]
   propertyImages PropertyImage[]
-  transactions   Transaction[]
   wishlists      Wishlist[]
 }
 
@@ -141,44 +130,20 @@ model Inquiry {
   property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 }
 
-model Transaction {
-  id              String    @id @default(cuid())
-  amount          Decimal
-  status          String    @default("PENDING")
-  paymentProofUrl String?
-  paidAt          DateTime?
-  propertyTitle   String?
-  propertyId      String
-  buyerId         String
-  sellerId        String
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  property        Property  @relation(fields: [propertyId], references: [id])
-  buyer           User      @relation("BuyerTransactions", fields: [buyerId], references: [id])
-  seller          User      @relation("SellerTransactions", fields: [sellerId], references: [id])
-}
-
-model Offer {
-  id         String         @id @default(cuid())
-  amount     Decimal
-  status     String         @default("PENDING")
-  userId     String
-  propertyId String
-  createdAt  DateTime       @default(now())
-  updatedAt  DateTime       @updatedAt
-  property   Property       @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  history    OfferHistory[]
-}
-
-model OfferHistory {
-  id        String   @id @default(cuid())
-  offerId   String
-  senderId  String
-  price     Decimal?
-  message   String?
-  action    String
-  createdAt DateTime @default(now())
-  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  offer     Offer    @relation(fields: [offerId], references: [id], onDelete: Cascade)
+// Account Type Upgrade Request untuk approval workflow
+model AccountUpgradeRequest {
+  id              String   @id @default(cuid())
+  userId          String
+  requestedType   String   // AGENT | AGENCY
+  currentType     String   // Biasanya INDIVIDUAL
+  reason          String?  // Alasan user upgrade
+  status          String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  adminNote       String?  // Catatan admin saat approve/reject
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([status])
 }
