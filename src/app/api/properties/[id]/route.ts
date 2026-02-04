@@ -1,8 +1,6 @@
 import { stackServerApp } from '@/lib/stack';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
-
-const prisma = new PrismaClient();
 
 // PATCH /api/properties/[id] - Update Property
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -57,14 +55,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         });
 
         return NextResponse.json(updatedProperty);
-    } catch (error: any) {
+    } catch (error) {
         console.error('Error updating property:', error);
-        return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal Server Error' }, { status: 500 });
     }
 }
 
 // DELETE /api/properties/[id] - Delete Property
-export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
     const user = await stackServerApp.getUser();
     const userId = user?.id;
     const { id } = await params;
@@ -100,8 +98,8 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
         });
 
         return NextResponse.json({ message: 'Property deleted successfully' });
-    } catch (error: any) {
+    } catch (error) {
         console.error('Error deleting property:', error);
-        return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal Server Error' }, { status: 500 });
     }
 }

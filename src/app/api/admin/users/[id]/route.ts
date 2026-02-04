@@ -14,6 +14,10 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    if (userId === id) {
+        return NextResponse.json({ error: 'Forbidden: You cannot delete your own account' }, { status: 403 });
+    }
+
     try {
         const dbUser = await prisma.user.findUnique({
             where: { id: userId },
@@ -29,8 +33,8 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
         });
 
         return NextResponse.json({ message: 'User deleted successfully' });
-    } catch (error: any) {
+    } catch (error) {
         console.error('Error deleting user:', error);
-        return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal Server Error' }, { status: 500 });
     }
 }

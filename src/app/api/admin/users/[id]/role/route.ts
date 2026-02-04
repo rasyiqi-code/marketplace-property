@@ -14,6 +14,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    if (userId === id) {
+        return NextResponse.json({ error: 'Forbidden: You cannot change your own role' }, { status: 403 });
+    }
+
     try {
         const dbUser = await prisma.user.findUnique({
             where: { id: userId },
@@ -27,6 +31,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         const body = await request.json();
         const { role } = body;
 
+        // 1. Update di Stack Auth metadata agar konsisten
+        // @ts-ignore - Menggunakan internal/admin update jika tersedia
+        await stackServerApp.updateUser(id, {
+            metadata: { role }
+        });
+
+        // 2. Update di database lokal
         const updatedUser = await prisma.user.update({
             where: { id },
             data: { role },
@@ -34,8 +45,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
         return NextResponse.json(updatedUser);
 
-    } catch (error: any) {
+    } catch (error) {
         console.error('Error updating user role:', error);
-        return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal Server Error' }, { status: 500 });
     }
 }

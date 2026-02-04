@@ -7,268 +7,178 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-// =============================================================================
-// USER & AUTHENTICATION
-// =============================================================================
-
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  password  String?  // Nullable for OAuth providers
-  role      String   @default("USER") // ADMIN, AGENT, USER
-  image     String?
-  phone     String?
-  
-  // Relations
-  properties Property[]
-  wishlists  Wishlist[]
-  inquiries  Inquiry[]   // Inquiries yang dikirim user
-  
-  // Transactions
-  purchases  Transaction[] @relation("BuyerTransactions")
-  sales      Transaction[] @relation("SellerTransactions")
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  // Negotiation Relations
+  id            String         @id @default(cuid())
+  email         String         @unique
+  name          String?
+  password      String?
+  role          String         @default("USER")
+  image         String?
+  phone         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  bankAccount   String?
+  bankHolder    String?
+  bankName      String?
+  inquiries     Inquiry[]
   offers        Offer[]
   offerMessages OfferHistory[]
+  properties    Property[]
+  purchases     Transaction[]  @relation("BuyerTransactions")
+  sales         Transaction[]  @relation("SellerTransactions")
+  wishlists     Wishlist[]
 }
-
-// =============================================================================
-// AGENT (Agen Properti Profesional)
-// =============================================================================
 
 model Agent {
-  id          String     @id @default(cuid())
-  name        String
-  email       String     @unique
-  phone       String
-  photo       String?
-  bio         String?    // Deskripsi singkat agen
-  company     String?    // Nama perusahaan/kantor
-  verified    Boolean    @default(false) // Status verifikasi agen
-  
-  // Relations
-  properties  Property[]
-  
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id         String     @id @default(cuid())
+  name       String
+  email      String     @unique
+  phone      String
+  photo      String?
+  bio        String?
+  company    String?
+  verified   Boolean    @default(false)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  properties Property[]
 }
-
-// =============================================================================
-// PROPERTY (Properti/Listing)
-// =============================================================================
 
 model Property {
-  id          String   @id @default(cuid())
-  title       String
-  description String
-  price       Decimal
-  location    String   // Lokasi umum: "Jakarta Selatan, DKI Jakarta"
-  address     String   // Alamat lengkap
-  bedrooms    Int
-  bathrooms   Int
-  area        Float    // Luas bangunan (m²)
-  landArea    Float?   // Luas tanah (m²)
-  type        String   // House, Apartment, Villa, Land, Ruko, etc.
-  status      String   // sale, rent
-  images      String   // Legacy: JSON string atau comma-separated URLs
-  featured    Boolean  @default(false)
-  
-  // Lokasi koordinat untuk peta
-  latitude    Float?
-  longitude   Float?
-  
-  // Statistik
-  views       Int      @default(0) // Jumlah kali dilihat
-  
-  // Certificate (untuk tanah/rumah)
-  certificate String?  // SHM, SHGB, Girik, etc.
-  
-  // Kondisi
-  condition   String?  // Baru, Bekas, Renovasi
-  furnishing  String?  // Furnished, Semi-Furnished, Unfurnished
-  floors      Int?     // Jumlah lantai
-  
-  // Link to Agent (Official) or User (Self-listing)
-  agentId     String?
-  agent       Agent?   @relation(fields: [agentId], references: [id])
-  
-  userId      String?
-  user        User?    @relation(fields: [userId], references: [id])
-  
-  // Relations
-  propertyImages PropertyImage[]
-  facilities     PropertyFacility[]
-  wishlists      Wishlist[]
+  id             String             @id @default(cuid())
+  title          String
+  slug           String?            @unique
+  description    String
+  price          Decimal
+  location       String
+  address        String
+  bedrooms       Int
+  bathrooms      Int
+  area           Float
+  landArea       Float?
+  type           String
+  status         String
+  images         String
+  featured       Boolean            @default(false)
+  latitude       Float?
+  longitude      Float?
+  views          Int                @default(0)
+  certificate    String?
+  condition      String?
+  furnishing     String?
+  floors         Int?
+  agentId        String?
+  userId         String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  mapsEmbed      String?
+  videoUrl       String?
+  virtualTourUrl String?
   inquiries      Inquiry[]
+  offers         Offer[]
+  user           User?              @relation(fields: [userId], references: [id])
+  agent          Agent?             @relation(fields: [agentId], references: [id])
+  facilities     PropertyFacility[]
+  propertyImages PropertyImage[]
   transactions   Transaction[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  // Negotiation Relations
-  offers      Offer[]
+  wishlists      Wishlist[]
 }
-
-// =============================================================================
-// PROPERTY IMAGES (Multiple gambar per properti)
-// =============================================================================
 
 model PropertyImage {
   id         String   @id @default(cuid())
   url        String
-  caption    String?  // Keterangan gambar (opsional)
-  isPrimary  Boolean  @default(false) // Gambar utama
-  sortOrder  Int      @default(0) // Urutan tampilan
-  
+  caption    String?
+  isPrimary  Boolean  @default(false)
+  sortOrder  Int      @default(0)
   propertyId String
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  
   createdAt  DateTime @default(now())
+  hash       String?
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 }
-
-// =============================================================================
-// FACILITY (Master data fasilitas)
-// =============================================================================
 
 model Facility {
-  id         String   @id @default(cuid())
-  name       String   @unique // "Keamanan 24 Jam", "Kolam Renang", etc.
-  icon       String?  // Icon name dari lucide/MUI icons
-  category   String?  // Kategori: "Keamanan", "Olahraga", "Umum", etc.
-  
-  // Relations
+  id         String             @id @default(cuid())
+  name       String             @unique
+  icon       String?
+  category   String?
+  createdAt  DateTime           @default(now())
   properties PropertyFacility[]
-  
-  createdAt  DateTime @default(now())
 }
-
-// =============================================================================
-// PROPERTY FACILITY (Many-to-Many relation)
-// =============================================================================
 
 model PropertyFacility {
   id         String   @id @default(cuid())
-  
   propertyId String
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  
   facilityId String
   facility   Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
-  
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
   @@unique([propertyId, facilityId])
 }
 
-// =============================================================================
-// WISHLIST (Properti favorit user)
-// =============================================================================
-
 model Wishlist {
   id         String   @id @default(cuid())
-  
   userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
   propertyId String
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  
   createdAt  DateTime @default(now())
-  
-  @@unique([userId, propertyId]) // Satu user hanya bisa wishlist satu properti sekali
-}
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-// =============================================================================
-// INQUIRY (Pesan/Pertanyaan ke agen)
-// =============================================================================
+  @@unique([userId, propertyId])
+}
 
 model Inquiry {
   id         String   @id @default(cuid())
-  name       String   // Nama pengirim
-  email      String   // Email pengirim
-  phone      String?  // Nomor telepon (opsional)
-  message    String   // Isi pesan
-  
-  // Status tracking
-  isRead     Boolean  @default(false)  // Sudah dibaca?
-  isReplied  Boolean  @default(false)  // Sudah dibalas?
-  
-  // Relations
+  name       String
+  email      String
+  phone      String?
+  message    String
+  isRead     Boolean  @default(false)
+  isReplied  Boolean  @default(false)
   propertyId String
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  
-  // Optional: link ke user jika login
   userId     String?
-  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+  user       User?    @relation(fields: [userId], references: [id])
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 }
-
-// =============================================================================
-// TRANSACTION (Pembelian/Sewa)
-// =============================================================================
 
 model Transaction {
-  id          String   @id @default(cuid())
-  amount      Decimal
-  status      String   @default("PENDING") // PENDING, SUCCESS, CANCELLED, FAILED
-  
-  // Property Info Snapshot (in case property data changes)
-  propertyTitle String?
-  
-  // Relations
-  propertyId  String
-  property    Property @relation(fields: [propertyId], references: [id])
-  
-  buyerId     String
-  buyer       User     @relation("BuyerTransactions", fields: [buyerId], references: [id])
-  
-  sellerId    String
-  seller      User     @relation("SellerTransactions", fields: [sellerId], references: [id])
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String    @id @default(cuid())
+  amount          Decimal
+  status          String    @default("PENDING")
+  paymentProofUrl String?
+  paidAt          DateTime?
+  propertyTitle   String?
+  propertyId      String
+  buyerId         String
+  sellerId        String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  property        Property  @relation(fields: [propertyId], references: [id])
+  buyer           User      @relation("BuyerTransactions", fields: [buyerId], references: [id])
+  seller          User      @relation("SellerTransactions", fields: [sellerId], references: [id])
 }
 
-// =============================================================================
-// OFFER & NEGOTIATION (Tawar Menawar)
-// =============================================================================
-
 model Offer {
-  id        String   @id @default(cuid())
-  amount    Decimal
-  status    String   @default("PENDING") // PENDING, ACCEPTED, REJECTED, COUNTERED
-  
-  // Relations
-  userId    String   // Buyer who made the offer
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  id         String         @id @default(cuid())
+  amount     Decimal
+  status     String         @default("PENDING")
+  userId     String
   propertyId String
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-
-  history   OfferHistory[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  property   Property       @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  history    OfferHistory[]
 }
 
 model OfferHistory {
   id        String   @id @default(cuid())
-  
   offerId   String
-  offer     Offer    @relation(fields: [offerId], references: [id], onDelete: Cascade)
-
-  senderId  String   
-  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  
-  price     Decimal? // If this message includes a price update (counter offer)
-  message   String?  // The chat message
-  
-  action    String   // CREATE, COUNTER, ACCEPT, REJECT, MESSAGE
-
+  senderId  String
+  price     Decimal?
+  message   String?
+  action    String
   createdAt DateTime @default(now())
+  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  offer     Offer    @relation(fields: [offerId], references: [id], onDelete: Cascade)
 }

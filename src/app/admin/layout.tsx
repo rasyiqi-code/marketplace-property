@@ -21,9 +21,14 @@ export default async function AdminLayout({
         redirect('/handler/sign-in');
     }
 
-    // TODO: Cek role ADMIN melalui Stack Auth metadata/teams
-    // Untuk saat ini, semua authenticated user bisa akses admin
-    // Nantinya bisa menggunakan user.teamPermissions atau custom metadata
+    // Pengecekan role ADMIN
+    const adminIds = process.env.ADMIN_IDS?.split(',') || [];
+    const isBypassAdmin = adminIds.includes(user.id);
+
+    // @ts-ignore - Menangani custom metadata atau field role dari Stack Auth
+    if (user.role !== 'ADMIN' && user.metadata?.role !== 'ADMIN' && !isBypassAdmin) {
+        redirect('/');
+    }
 
     const displayName = user.displayName || user.primaryEmail?.split('@')[0] || 'Admin';
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Check, X, Clock, Loader2, ArrowRight } from 'lucide-react';
+import { Check, X, Clock, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { OffersList } from '@/components/dashboard/OffersList';
 

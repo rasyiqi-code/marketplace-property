@@ -12,6 +12,7 @@ export async function PATCH(
         if (!user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
+        console.log('DEBUG: Current User ID:', user.id);
 
         const body = await request.json();
         const { status } = body;
@@ -32,22 +33,35 @@ export async function PATCH(
         });
 
         const isSeller = transaction.sellerId === user.id;
-        const isAdmin = dbUser?.role === 'ADMIN';
+        const isBuyer = transaction.buyerId === user.id;
 
-        if (!isSeller && !isAdmin) {
+        // Bypass Admin berdasarkan User ID Stack Auth di .env.local
+        const adminIds = process.env.ADMIN_IDS?.split(',') || [];
+        const isAdmin = dbUser?.role === 'ADMIN' || adminIds.includes(user.id);
+
+        // Logic check:
+        // Buyer can update to WAITING_VERIFICATION (upload proof)
+        // Seller/Admin can update to SUCCESS/CANCELLED/FAILED
+
+        let updateData: any = { status };
+
+        if (isBuyer && status === 'WAITING_VERIFICATION') {
+            const { paymentProofUrl } = body;
+            if (paymentProofUrl) updateData.paymentProofUrl = paymentProofUrl;
+        } else if (!isSeller && !isAdmin) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
         }
 
         const updatedTransaction = await prisma.transaction.update({
             where: { id },
-            data: { status },
+            data: updateData,
         });
 
         return NextResponse.json(updatedTransaction);
 
-    } catch (error: any) {
+    } catch (error) {
         return NextResponse.json(
-            { error: error.message || 'Internal Server Error' },
+            { error: error instanceof Error ? error.message : 'Internal Server Error' },
             { status: 500 }
         );
     }

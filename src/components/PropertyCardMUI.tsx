@@ -62,17 +62,21 @@ export function PropertyCardMUI({
         >
             <CardActionArea
                 component={Link}
-                href={`/property/${property.id}`}
+                href={property.slug ? `/${property.status === 'sale' ? 'jual' : 'sewa'}/${property.slug}` : `/property/${property.id}`}
                 sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
             >
                 {/* Image Container */}
                 <Box sx={{ position: 'relative' }}>
                     <CardMedia
                         component="img"
-                        height="200"
                         image={property.imageUrl || '/images/placeholder.jpg'}
                         alt={property.title}
-                        sx={{ objectFit: 'cover' }}
+                        sx={{
+                            aspectRatio: '16/9',
+                            objectFit: 'cover',
+                            width: '100%',
+                            height: 'auto'
+                        }}
                     />
 
                     {/* Status Badge */}

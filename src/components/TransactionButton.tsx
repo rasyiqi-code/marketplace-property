@@ -11,7 +11,8 @@ interface TransactionButtonProps {
     propertyId: string;
     isOwner: boolean;
     status: 'sale' | 'rent';
-    price: number; // Need price for modal
+    price: number;
+    propertyStatus?: 'sale' | 'rent'; // Pass status for dynamic text
 }
 
 export function TransactionButton({ propertyId, isOwner, status, price }: TransactionButtonProps) {
@@ -37,10 +38,11 @@ export function TransactionButton({ propertyId, isOwner, status, price }: Transa
 
             alert('Permintaan transaksi berhasil dibuat! Silakan cek dashboard Anda.');
             router.push('/transactions');
-        } catch (error: any) {
+        } catch (error) {
             console.error(error);
-            alert(error.message || 'Gagal membuat transaksi. Pastikan Anda sudah login.');
-            if (error.message.includes('Unauthorized')) {
+            const message = error instanceof Error ? error.message : 'Gagal membuat transaksi. Pastikan Anda sudah login.';
+            alert(message);
+            if (message.includes('Unauthorized')) {
                 window.location.href = '/handler/sign-in';
             }
         } finally {
@@ -68,12 +70,12 @@ export function TransactionButton({ propertyId, isOwner, status, price }: Transa
                 {isLoading ? 'Memproses...' : (status === 'sale' ? 'Beli Langsung' : 'Sewa Langsung')}
             </button>
 
-            {status === 'sale' && (
+            {(status === 'sale' || status === 'rent') && (
                 <button
                     onClick={() => setShowNego(true)}
                     className="w-full bg-white border-2 border-primary text-primary hover:bg-primary/5 font-bold py-3 px-4 rounded-lg transition-colors"
                 >
-                    Nego Harga
+                    Nego Harga {status === 'rent' ? 'Sewa' : ''}
                 </button>
             )}
 
@@ -82,6 +84,7 @@ export function TransactionButton({ propertyId, isOwner, status, price }: Transa
                 onClose={() => setShowNego(false)}
                 propertyId={propertyId}
                 listingPrice={price}
+                propertyStatus={status}
             />
         </div>
     );

@@ -1,6 +1,7 @@
 'use client';
 
 import { PropertyInput } from '@/lib/data/properties';
+import { LocationPicker } from './LocationPicker';
 
 interface StepProps {
     data: PropertyInput;
@@ -69,6 +70,10 @@ export function StepBasicInfo({ data, update }: StepProps) {
                         <option value="Tanah">Tanah</option>
                         <option value="Villa">Villa</option>
                         <option value="Kantor">Kantor</option>
+                        <option value="Gudang">Gudang</option>
+                        <option value="Kost">Kost</option>
+                        <option value="Kios">Kios</option>
+                        <option value="Ruang Usaha">Ruang Usaha</option>
                     </select>
                 </div>
             </div>
@@ -89,7 +94,7 @@ export function StepBasicInfo({ data, update }: StepProps) {
             </div>
 
             {/* Address */}
-            <div>
+            <div className="pb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Alamat Lengkap</label>
                 <textarea
                     rows={2}
@@ -97,6 +102,16 @@ export function StepBasicInfo({ data, update }: StepProps) {
                     onChange={(e) => update({ address: e.target.value })}
                     placeholder="Nama Jalan, Nomor, RT/RW, Kecamatan..."
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none"
+                />
+            </div>
+
+            {/* Google Maps Embed (Mandatory) */}
+            <div className="pt-4 border-t border-gray-100">
+                <LocationPicker
+                    lat={data.latitude}
+                    lng={data.longitude}
+                    mapsEmbed={data.mapsEmbed}
+                    onChange={(lat, lng, embed) => update({ latitude: lat, longitude: lng, mapsEmbed: embed })}
                 />
             </div>
         </div>

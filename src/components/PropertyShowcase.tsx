@@ -9,7 +9,6 @@ import {
     Tab,
     Grid,
     Button,
-    useTheme,
 } from '@mui/material';
 import { ArrowForward } from '@mui/icons-material';
 import Link from 'next/link';
@@ -33,7 +32,6 @@ export function PropertyShowcase({
     popularProperties,
     newProperties,
 }: PropertyShowcaseProps) {
-    const theme = useTheme();
     const [activeTab, setActiveTab] = React.useState<ShowcaseTab>('featured');
 
     const handleTabChange = (_: React.SyntheticEvent, newValue: ShowcaseTab) => {

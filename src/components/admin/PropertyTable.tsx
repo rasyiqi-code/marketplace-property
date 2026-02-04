@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { PropertyDTO } from '@/lib/data/properties';
 import { Trash2, ExternalLink, Star, Edit } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface PropertyTableProps {
     properties: PropertyDTO[];
@@ -67,11 +68,14 @@ export function PropertyTable({ properties: initialProperties }: PropertyTablePr
                             <tr key={property.id} className="hover:bg-gray-50/50 transition-colors">
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
-                                        <img
-                                            src={property.imageUrl || 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80'}
-                                            alt={property.title}
-                                            className="w-10 h-10 rounded-lg object-cover"
-                                        />
+                                        <div className="relative w-10 h-10 flex-shrink-0">
+                                            <Image
+                                                src={property.imageUrl || 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80'}
+                                                alt={property.title}
+                                                fill
+                                                className="rounded-lg object-cover"
+                                            />
+                                        </div>
                                         <span className="font-medium text-gray-900 line-clamp-1 max-w-[200px]" title={property.title}>
                                             {property.title}
                                         </span>

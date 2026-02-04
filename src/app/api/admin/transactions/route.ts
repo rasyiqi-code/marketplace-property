@@ -2,7 +2,7 @@ import { prisma } from '@/lib/db';
 import { stackServerApp } from '@/lib/stack';
 import { NextResponse } from 'next/server';
 
-export async function GET(request: Request) {
+export async function GET() {
     try {
         const user = await stackServerApp.getUser();
         if (!user) {
@@ -28,19 +28,19 @@ export async function GET(request: Request) {
             orderBy: { createdAt: 'desc' },
         });
 
-        // Helper DTO Mapper (duplicated for now, better in shared utils but keeping it simple)
-        const mapToDTO = (tx: any) => ({
-            id: tx.id,
+        // Helper DTO Mapper
+        const mapToDTO = (tx: Record<string, unknown>) => ({
+            id: tx.id as string,
             amount: Number(tx.amount),
-            status: tx.status,
-            propertyTitle: tx.propertyTitle,
-            propertyId: tx.propertyId,
-            buyerId: tx.buyerId,
-            sellerId: tx.sellerId,
-            createdAt: tx.createdAt,
+            status: tx.status as string,
+            propertyTitle: tx.propertyTitle as string,
+            propertyId: tx.propertyId as string,
+            buyerId: tx.buyerId as string,
+            sellerId: tx.sellerId as string,
+            createdAt: tx.createdAt as string,
             property: {
-                title: tx.property.title,
-                images: tx.property.images,
+                title: (tx.property as Record<string, unknown>).title as string,
+                images: (tx.property as Record<string, unknown>).images as string,
             },
             buyer: tx.buyer,
             seller: tx.seller,
@@ -48,9 +48,9 @@ export async function GET(request: Request) {
 
         return NextResponse.json(transactions.map(mapToDTO));
 
-    } catch (error: any) {
+    } catch (error) {
         return NextResponse.json(
-            { error: error.message || 'Internal Server Error' },
+            { error: error instanceof Error ? error.message : 'Internal Server Error' },
             { status: 500 }
         );
     }

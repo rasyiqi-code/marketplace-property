@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { User, ShoppingCart, Home, Settings, LogOut } from 'lucide-react';
+import { User, ShoppingCart, Home, LogOut } from 'lucide-react';
 import { Box, Paper, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Divider } from '@mui/material';
 
 const MENU_ITEMS = [

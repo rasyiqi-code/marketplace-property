@@ -3,19 +3,19 @@ import { stackServerApp } from '@/lib/stack';
 import { NextResponse } from 'next/server';
 
 // Helper to map Offer to DTO
-function mapOfferToDTO(offer: any) {
+function mapOfferToDTO(offer: Record<string, unknown>) {
     return {
-        id: offer.id,
+        id: offer.id as string,
         amount: Number(offer.amount),
-        status: offer.status,
-        propertyTitle: offer.property.title,
-        propertyId: offer.propertyId,
-        buyerName: offer.user.name || offer.user.email,
-        buyerId: offer.userId,
-        sellerId: offer.property.userId, // needed for permission checks
-        createdAt: offer.createdAt,
-        historyCount: offer.history.length,
-        propertyImage: offer.property.images ? offer.property.images.split(',')[0] : null,
+        status: offer.status as string,
+        propertyTitle: (offer.property as Record<string, unknown>).title as string,
+        propertyId: offer.propertyId as string,
+        buyerName: ((offer.user as Record<string, unknown>).name || (offer.user as Record<string, unknown>).email) as string,
+        buyerId: offer.userId as string,
+        sellerId: (offer.property as Record<string, unknown>).userId as string, // needed for permission checks
+        createdAt: offer.createdAt as Date,
+        historyCount: (offer.history as unknown[]).length,
+        propertyImage: (offer.property as Record<string, unknown>).images ? ((offer.property as Record<string, unknown>).images as string).split(',')[0] : null,
     };
 }
 
@@ -88,9 +88,9 @@ export async function POST(request: Request) {
 
         return NextResponse.json(offer);
 
-    } catch (error: any) {
+    } catch (error) {
         console.error('Create Offer Error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal Server Error' }, { status: 500 });
     }
 }
 
@@ -130,8 +130,8 @@ export async function GET(request: Request) {
 
         return NextResponse.json(offers.map(mapOfferToDTO));
 
-    } catch (error: any) {
+    } catch (error) {
         console.error('Get Offers Error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal Server Error' }, { status: 500 });
     }
 }

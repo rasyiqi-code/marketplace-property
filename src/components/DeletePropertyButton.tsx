@@ -27,9 +27,9 @@ export function DeletePropertyButton({ propertyId }: DeletePropertyButtonProps) 
             }
 
             router.refresh();
-        } catch (err: any) {
+        } catch (err) {
             console.error(err);
-            alert(err.message || 'Gagal menghapus properti');
+            alert(err instanceof Error ? err.message : 'Gagal menghapus properti');
         } finally {
             setIsDeleting(false);
         }

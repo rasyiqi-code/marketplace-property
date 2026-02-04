@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { Loader2, MessageSquare, Check, X, RefreshCw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -35,7 +35,7 @@ export function OffersList({ type }: OffersListProps) {
     const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
     const [showHistory, setShowHistory] = useState(false);
 
-    const fetchOffers = async () => {
+    const fetchOffers = useCallback(async () => {
         setLoading(true);
         try {
             const res = await fetch(`/api/offers?type=${type}`);
@@ -48,15 +48,15 @@ export function OffersList({ type }: OffersListProps) {
         } finally {
             setLoading(false);
         }
-    };
+    }, [type]);
 
     useEffect(() => {
         fetchOffers();
-    }, [type]);
+    }, [fetchOffers]);
 
     const handleAction = async (offerId: string, action: 'ACCEPT' | 'REJECT' | 'COUNTER') => {
-        let amount = undefined;
-        let message = undefined;
+        let amount: number | undefined = undefined;
+        const message = undefined;
 
         if (action === 'COUNTER') {
             const input = prompt('Masukkan harga penawaran baru (Counter Offer):');
@@ -92,8 +92,8 @@ export function OffersList({ type }: OffersListProps) {
                 fetchOffers();
                 router.refresh(); // Refresh server components if any
             }
-        } catch (error: any) {
-            alert(error.message);
+        } catch (error) {
+            alert(error instanceof Error ? error.message : 'Terjadi kesalahan');
         } finally {
             setActionLoading(null);
         }

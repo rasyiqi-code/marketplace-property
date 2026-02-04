@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { X, Loader2, User, UserCheck } from 'lucide-react';
+import { X, Loader2, User } from 'lucide-react';
 import Image from 'next/image';
 
 interface OfferHistoryModalProps {
@@ -24,11 +24,11 @@ interface HistoryItem {
 
 export function OfferHistoryModal({ offerId, isOpen, onClose }: OfferHistoryModalProps) {
     const [history, setHistory] = useState<HistoryItem[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(isOpen && !!offerId);
 
     useEffect(() => {
         if (isOpen && offerId) {
-            setLoading(true);
+            // No need to setLoading(true) here if initialized correctly
             fetch(`/api/offers/${offerId}/action`)
                 .then((res) => res.json())
                 .then((data) => setHistory(data))

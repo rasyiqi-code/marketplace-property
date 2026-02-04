@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Calculator, DollarSign, Percent, Calendar } from 'lucide-react';
+import { useState } from 'react';
+import { Calculator, Percent, Calendar } from 'lucide-react';
 
 export function MortgageCalculator() {
     // Default values
@@ -10,31 +10,19 @@ export function MortgageCalculator() {
     const [interest, setInterest] = useState<number>(5.5); // 5.5%
     const [tenure, setTenure] = useState<number>(15); // 15 years
 
-    const [monthlyPayment, setMonthlyPayment] = useState<number>(0);
-    const [loanAmount, setLoanAmount] = useState<number>(0);
-    const [dpAmount, setDpAmount] = useState<number>(0);
+    // Derived values
+    const dpAmount = price * (dpPercent / 100);
+    const loanAmount = price - dpAmount;
+    const interestRate = interest / 100 / 12; // Monthly interest rate
+    const numberOfPayments = tenure * 12; // Total number of months
 
-    useEffect(() => {
-        calculateMortgage();
-    }, [price, dpPercent, interest, tenure]);
-
-    const calculateMortgage = () => {
-        const dp = price * (dpPercent / 100);
-        const principal = price - dp;
-        const interestRate = interest / 100 / 12; // Monthly interest rate
-        const numberOfPayments = tenure * 12; // Total number of months
-
-        setDpAmount(dp);
-        setLoanAmount(principal);
-
-        if (interest === 0) {
-            setMonthlyPayment(principal / numberOfPayments);
-        } else {
-            // Mortgage Formula: M = P [ i(1 + i)^n ] / [ (1 + i)^n – 1 ]
-            const payment = (principal * interestRate * Math.pow(1 + interestRate, numberOfPayments)) / (Math.pow(1 + interestRate, numberOfPayments) - 1);
-            setMonthlyPayment(payment);
-        }
-    };
+    let monthlyPayment = 0;
+    if (interest === 0) {
+        monthlyPayment = loanAmount / numberOfPayments;
+    } else {
+        // Mortgage Formula: M = P [ i(1 + i)^n ] / [ (1 + i)^n – 1 ]
+        monthlyPayment = (loanAmount * interestRate * Math.pow(1 + interestRate, numberOfPayments)) / (Math.pow(1 + interestRate, numberOfPayments) - 1);
+    }
 
     const formatCurrency = (value: number) => {
         return new Intl.NumberFormat('id-ID', {

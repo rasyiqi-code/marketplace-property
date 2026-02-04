@@ -1,8 +1,10 @@
 import { getUsers } from '@/lib/data/users';
 import { UserTable } from '@/components/admin/UserTable';
+import { stackServerApp } from '@/lib/stack';
 
 export default async function AdminUsersPage() {
     const users = await getUsers();
+    const currentUser = await stackServerApp.getUser();
 
     return (
         <div className="space-y-6">
@@ -13,7 +15,7 @@ export default async function AdminUsersPage() {
                 </div>
             </div>
 
-            <UserTable users={users} />
+            <UserTable users={users} currentUserId={currentUser?.id} />
         </div>
     );
 }

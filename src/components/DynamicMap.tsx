@@ -1,23 +1,24 @@
 'use client';
 
-import dynamic from 'next/dynamic';
-import { useMemo } from 'react';
+interface MapProps {
+    mapsEmbed?: string;
+    address?: string;
+    // Keep others for backward compatibility avoiding breakage
+    latitude?: number;
+    longitude?: number;
+    location?: string;
+}
 
-// Dynamically import the Map component with SSR disabled
-// This wrapper is necessary because Next.js Server Components don't support { ssr: false } directly
+import dynamic from 'next/dynamic';
+
 const LazyMap = dynamic(() => import('./Map'), {
     ssr: false,
     loading: () => (
-        <div className="w-full h-full bg-slate-100 animate-pulse flex items-center justify-center text-slate-400">
-            Peta Memuat...
+        <div className="w-full h-full bg-slate-100 animate-pulse flex items-center justify-center text-slate-400 text-sm">
+            Memuat Google Maps...
         </div>
     )
 });
-
-interface MapProps {
-    address: string;
-    location: string;
-}
 
 export default function DynamicMap(props: MapProps) {
     return <LazyMap {...props} />;

@@ -1,5 +1,8 @@
 import { HeroMUI } from '@/components/HeroMUI';
 import { PropertyShowcase } from '@/components/PropertyShowcase';
+import { StatsSection } from '@/components/homepage/StatsSection';
+import { CategorySection } from '@/components/homepage/CategorySection';
+import { TestimonialSection } from '@/components/homepage/TestimonialSection';
 import {
   getFeaturedProperties,
   getPopularProperties,
@@ -21,11 +24,14 @@ export default async function Home() {
   return (
     <>
       <HeroMUI />
+      <StatsSection />
+      <CategorySection />
       <PropertyShowcase
         featuredProperties={featured}
         popularProperties={popular}
         newProperties={newProps}
       />
+      <TestimonialSection />
     </>
   );
 }

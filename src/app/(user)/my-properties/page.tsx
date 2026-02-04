@@ -97,7 +97,7 @@ export default async function MyPropertiesPage() {
                             {/* Action Overlay */}
                             <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 p-1 rounded-lg backdrop-blur-sm shadow-sm z-10">
                                 <Link
-                                    href={`/my-properties/${property.id}/edit`}
+                                    href={`/${property.status === 'rent' ? 'sewa' : 'jual'}/${property.slug || property.id}/edit`}
                                     className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
                                     title="Edit Properti"
                                 >

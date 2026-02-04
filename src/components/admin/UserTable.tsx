@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import { UserDTO } from '@/lib/data/users';
-import { Trash2, UserCog, Check, X, Shield } from 'lucide-react';
+import { Trash2, UserCog, Check, X } from 'lucide-react';
 
 interface UserTableProps {
     users: UserDTO[];
+    currentUserId?: string;
 }
 
-export function UserTable({ users: initialUsers }: UserTableProps) {
+export function UserTable({ users: initialUsers, currentUserId }: UserTableProps) {
     const [users, setUsers] = useState(initialUsers);
     const [isDeleting, setIsDeleting] = useState<string | null>(null);
     const [editingRole, setEditingRole] = useState<string | null>(null);
@@ -80,7 +81,12 @@ export function UserTable({ users: initialUsers }: UserTableProps) {
                             <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
                                 <td className="px-6 py-4">
                                     <div className="flex flex-col">
-                                        <span className="font-medium text-gray-900">{user.name}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-medium text-gray-900">{user.name}</span>
+                                            {user.id === currentUserId && (
+                                                <span className="bg-primary/10 text-primary text-[10px] font-bold px-1.5 py-0.5 rounded uppercase">Anda</span>
+                                            )}
+                                        </div>
                                         <span className="text-xs text-gray-400">{user.email}</span>
                                     </div>
                                 </td>
@@ -115,11 +121,12 @@ export function UserTable({ users: initialUsers }: UserTableProps) {
                                     ) : (
                                         <button
                                             onClick={() => startEditRole(user)}
-                                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium hover:bg-opacity-80 transition-opacity ${user.role === 'ADMIN'
+                                            disabled={user.id === currentUserId}
+                                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium hover:bg-opacity-80 transition-opacity disabled:cursor-not-allowed ${user.role === 'ADMIN'
                                                 ? 'bg-purple-50 text-purple-700'
                                                 : 'bg-blue-50 text-blue-700'
                                                 }`}
-                                            title="Klik untuk ubah role"
+                                            title={user.id === currentUserId ? 'Anda tidak bisa mengubah role sendiri' : 'Klik untuk ubah role'}
                                         >
                                             {user.role === 'ADMIN' && <UserCog className="w-3 h-3" />}
                                             {user.role}
@@ -139,9 +146,9 @@ export function UserTable({ users: initialUsers }: UserTableProps) {
                                 <td className="px-6 py-4">
                                     <button
                                         onClick={() => handleDelete(user.id)}
-                                        disabled={isDeleting === user.id || user.role === 'ADMIN'}
+                                        disabled={isDeleting === user.id || user.role === 'ADMIN' || user.id === currentUserId}
                                         className="p-2 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                                        title={user.role === 'ADMIN' ? 'Tidak bisa menghapus Admin' : 'Hapus User'}
+                                        title={user.id === currentUserId ? 'Anda tidak bisa menghapus akun sendiri' : user.role === 'ADMIN' ? 'Tidak bisa menghapus Admin' : 'Hapus User'}
                                     >
                                         {isDeleting === user.id ? (
                                             <span className="animate-spin w-4 h-4 block border-2 border-red-600 border-t-transparent rounded-full"></span>

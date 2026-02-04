@@ -1,6 +1,7 @@
 import { FilterSidebar } from '@/components/filters/FilterSidebar';
 import { PropertyCardMUI } from '@/components/PropertyCardMUI';
 import { getProperties } from '@/lib/data/properties';
+import { SearchResults } from '@/components/search/SearchResults';
 
 export default async function SearchPage({
     searchParams,
@@ -40,22 +41,8 @@ export default async function SearchPage({
                         <FilterSidebar />
                     </div>
 
-                    {/* Results Grid */}
-                    <div className="lg:col-span-3">
-                        {properties.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                                {properties.map((property) => (
-                                    <PropertyCardMUI key={property.id} property={property} />
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="bg-white border border-gray-200 rounded-xl p-12 text-center">
-                                <div className="text-gray-400 mb-4 text-6xl">🔍</div>
-                                <h3 className="text-xl font-bold text-gray-900 mb-2">Tidak ada properti ditemukan</h3>
-                                <p className="text-gray-500">Coba ubah filter pencarian Anda atau gunakan kata kunci lain.</p>
-                            </div>
-                        )}
-                    </div>
+                    {/* Results Content */}
+                    <SearchResults properties={properties} />
                 </div>
             </main>
         </div>

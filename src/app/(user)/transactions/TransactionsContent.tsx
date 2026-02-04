@@ -2,32 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Check, X, Clock, Loader2 } from 'lucide-react';
-import Image from 'next/image';
 import { OffersList } from '@/components/dashboard/OffersList';
-
-interface TransactionDTO {
-    id: string;
-    amount: number;
-    status: string;
-    propertyTitle: string | null;
-    propertyId: string;
-    buyerId: string;
-    sellerId: string;
-    createdAt: string;
-    property: {
-        title: string;
-        images: string;
-    };
-    buyer: {
-        name: string | null;
-        email: string;
-    };
-    seller: {
-        name: string | null;
-        email: string;
-    };
-}
+import { TransactionDTO } from '@/components/transactions/types';
+import { LoadingState } from '@/components/transactions/LoadingState';
+import { TransactionCard } from '@/components/transactions/TransactionCard';
 
 export function TransactionsContent() {
     const router = useRouter();
@@ -60,14 +38,14 @@ export function TransactionsContent() {
         }
     }, [activeTab]);
 
-    const handleUpdateStatus = async (id: string, newStatus: string) => {
+    const handleUpdateStatus = async (id: string, newStatus: string, extraData: any = {}) => {
         if (!confirm(`Ubah status transaksi menjadi ${newStatus}?`)) return;
 
         try {
             const res = await fetch(`/api/transactions/${id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: newStatus }),
+                body: JSON.stringify({ status: newStatus, ...extraData }),
             });
 
             if (res.ok) {
@@ -82,32 +60,6 @@ export function TransactionsContent() {
             alert('Terjadi kesalahan network.');
         }
     };
-
-    const StatusBadge = ({ status }: { status: string }) => {
-        let color = 'bg-gray-100 text-gray-600';
-        let icon = <Clock size={14} />;
-
-        if (status === 'SUCCESS') {
-            color = 'bg-green-100 text-green-700';
-            icon = <Check size={14} />;
-        } else if (status === 'CANCELLED' || status === 'FAILED') {
-            color = 'bg-red-100 text-red-700';
-            icon = <X size={14} />;
-        }
-
-        return (
-            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${color}`}>
-                {icon}
-                {status}
-            </span>
-        );
-    };
-
-    const LoadingState = () => (
-        <div className="flex h-64 items-center justify-center">
-            <Loader2 className="animate-spin text-primary" size={32} />
-        </div>
-    );
 
     return (
         <div className="space-y-8">
@@ -147,26 +99,12 @@ export function TransactionsContent() {
                             ) : (
                                 <div className="space-y-4">
                                     {purchases.map((tx) => (
-                                        <div key={tx.id} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex gap-4">
-                                            <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 relative">
-                                                <Image
-                                                    src={tx.property.images || '/images/placeholder.jpg'}
-                                                    alt={tx.propertyTitle || 'Property'}
-                                                    fill
-                                                    className="object-cover"
-                                                />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <h3 className="font-bold text-gray-900 truncate">{tx.propertyTitle}</h3>
-                                                <p className="text-sm text-gray-500 mb-2">Seller: {tx.seller.name || tx.seller.email}</p>
-                                                <div className="flex items-center justify-between mt-2">
-                                                    <span className="font-bold text-primary">
-                                                        {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(tx.amount)}
-                                                    </span>
-                                                    <StatusBadge status={tx.status} />
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <TransactionCard
+                                            key={tx.id}
+                                            tx={tx}
+                                            type="purchase"
+                                            onUpdateStatus={handleUpdateStatus}
+                                        />
                                     ))}
                                 </div>
                             )}
@@ -179,45 +117,12 @@ export function TransactionsContent() {
                             ) : (
                                 <div className="space-y-4">
                                     {sales.map((tx) => (
-                                        <div key={tx.id} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col gap-4">
-                                            <div className="flex gap-4">
-                                                <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 relative">
-                                                    <Image
-                                                        src={tx.property.images || '/images/placeholder.jpg'}
-                                                        alt={tx.propertyTitle || 'Property'}
-                                                        fill
-                                                        className="object-cover"
-                                                    />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <h3 className="font-bold text-gray-900 truncate">{tx.propertyTitle}</h3>
-                                                    <p className="text-sm text-gray-500">Buyer: {tx.buyer.name || tx.buyer.email}</p>
-                                                    <p className="text-sm text-gray-400 text-xs mt-1">
-                                                        {new Date(tx.createdAt).toLocaleDateString()}
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <div className="flex items-center justify-between border-t pt-3">
-                                                <StatusBadge status={tx.status} />
-                                                {tx.status === 'PENDING' && (
-                                                    <div className="flex gap-2">
-                                                        <button
-                                                            onClick={() => handleUpdateStatus(tx.id, 'CANCELLED')}
-                                                            className="px-3 py-1 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
-                                                        >
-                                                            Tolak
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleUpdateStatus(tx.id, 'SUCCESS')}
-                                                            className="px-3 py-1 text-xs font-bold text-green-600 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
-                                                        >
-                                                            Terima
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
+                                        <TransactionCard
+                                            key={tx.id}
+                                            tx={tx}
+                                            type="sale"
+                                            onUpdateStatus={handleUpdateStatus}
+                                        />
                                     ))}
                                 </div>
                             )}

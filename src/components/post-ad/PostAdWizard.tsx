@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { PropertyInput } from '@/lib/data/properties';
 import { CheckCircle2 } from 'lucide-react';
@@ -8,6 +8,7 @@ import { CheckCircle2 } from 'lucide-react';
 // Steps
 import { StepBasicInfo } from './StepBasicInfo';
 import { StepDetails } from './StepDetails';
+import { StepFacilities } from './StepFacilities';
 import { StepMedia } from './StepMedia';
 import { StepVerification } from './StepVerification';
 import { LivePreview } from './LivePreview';
@@ -15,8 +16,9 @@ import { LivePreview } from './LivePreview';
 const STEPS = [
     { title: 'Info Dasar', icon: '1' },
     { title: 'Detail', icon: '2' },
-    { title: 'Media', icon: '3' },
-    { title: 'Verifikasi', icon: '4' },
+    { title: 'Fasilitas', icon: '3' },
+    { title: 'Media', icon: '4' },
+    { title: 'Verifikasi', icon: '5' },
 ];
 
 interface PostAdWizardProps {
@@ -27,9 +29,9 @@ interface PostAdWizardProps {
 
 export function PostAdWizard({ initialData, isEditMode = false, propertyId }: PostAdWizardProps) {
     const router = useRouter();
-    const [currentStep, setCurrentStep] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
 
     const [formData, setFormData] = useState<PropertyInput>(initialData || {
         title: '',
@@ -40,16 +42,62 @@ export function PostAdWizard({ initialData, isEditMode = false, propertyId }: Po
         bedrooms: 1,
         bathrooms: 1,
         area: 45,
+        landArea: 60,
         type: 'Rumah',
         status: 'sale',
         imageUrl: '',
+        certificate: 'SHM',
+        condition: 'Baru',
+        furnishing: 'Unfurnished',
+        floors: 1,
+        facilities: [],
     });
+
+    const [currentStep, setCurrentStep] = useState(0);
+
+    // Initial restoration from localStorage
+    useEffect(() => {
+        setIsMounted(true);
+        if (!isEditMode) {
+            const savedData = localStorage.getItem('proestate_post_ad_data');
+            const savedStep = localStorage.getItem('proestate_post_ad_step');
+
+            if (savedData) {
+                try {
+                    setFormData(JSON.parse(savedData));
+                } catch (e) {
+                    console.error('Failed to parse saved form data', e);
+                }
+            }
+            if (savedStep) {
+                setCurrentStep(parseInt(savedStep, 10));
+            }
+        }
+    }, [isEditMode]);
+
+    // Save state to localStorage
+    useEffect(() => {
+        if (!isEditMode) {
+            localStorage.setItem('proestate_post_ad_data', JSON.stringify(formData));
+            localStorage.setItem('proestate_post_ad_step', currentStep.toString());
+        }
+    }, [formData, currentStep, isEditMode]);
 
     const updateFormData = (updates: Partial<PropertyInput>) => {
         setFormData((prev) => ({ ...prev, ...updates }));
     };
 
-    const nextStep = () => setCurrentStep((p) => Math.min(p + 1, STEPS.length - 1));
+    const handleNext = () => {
+        if (currentStep === 0) {
+            if (!formData.latitude || !formData.longitude) {
+                alert('Silakan tandai lokasi properti Anda di peta sebelum melanjutkan.');
+                return;
+            }
+        }
+        if (currentStep < STEPS.length - 1) {
+            setCurrentStep((p) => p + 1);
+        }
+    };
     const prevStep = () => setCurrentStep((p) => Math.max(0, p - 1));
 
     const handleSubmit = async () => {
@@ -81,7 +129,18 @@ export function PostAdWizard({ initialData, isEditMode = false, propertyId }: Po
 
                 if (!res.ok) {
                     const errorData = await res.json();
+                    if (res.status === 409) {
+                        alert(`PERINGATAN DUPLIKASI:\n\n${errorData.message}`);
+                        setIsLoading(false);
+                        return; // Stop processing
+                    }
                     throw new Error(errorData.error || 'Gagal membuat properti');
+                }
+
+                // Clear storage on success
+                if (typeof window !== 'undefined') {
+                    localStorage.removeItem('proestate_post_ad_data');
+                    localStorage.removeItem('proestate_post_ad_step');
                 }
 
                 setIsSuccess(true);
@@ -89,12 +148,20 @@ export function PostAdWizard({ initialData, isEditMode = false, propertyId }: Po
                     router.push('/my-properties');
                 }, 2000);
             }
-        } catch (err: any) {
+        } catch (err) {
             console.error(err);
-            alert(err.message || 'Gagal menyimpan properti.');
+            alert(err instanceof Error ? err.message : 'Gagal menyimpan properti.');
             setIsLoading(false);
         }
     };
+
+    if (!isMounted) {
+        return (
+            <div className="w-full min-h-[400px] flex items-center justify-center">
+                <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        );
+    }
 
     if (isSuccess) {
         return (
@@ -143,8 +210,9 @@ export function PostAdWizard({ initialData, isEditMode = false, propertyId }: Po
                 <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-8 min-h-[400px]">
                     {currentStep === 0 && <StepBasicInfo data={formData} update={updateFormData} />}
                     {currentStep === 1 && <StepDetails data={formData} update={updateFormData} />}
-                    {currentStep === 2 && <StepMedia data={formData} update={updateFormData} />}
-                    {currentStep === 3 && <StepVerification data={formData} isLoading={isLoading} onSubmit={handleSubmit} />}
+                    {currentStep === 2 && <StepFacilities data={formData} update={updateFormData} />}
+                    {currentStep === 3 && <StepMedia data={formData} update={updateFormData} />}
+                    {currentStep === 4 && <StepVerification data={formData} isLoading={isLoading} onSubmit={handleSubmit} />}
                 </div>
 
                 {/* Navigation Buttons */}
@@ -158,7 +226,7 @@ export function PostAdWizard({ initialData, isEditMode = false, propertyId }: Po
                     </button>
                     {currentStep < STEPS.length - 1 ? (
                         <button
-                            onClick={nextStep}
+                            onClick={handleNext}
                             className="px-8 py-2.5 rounded-lg bg-primary text-white font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
                         >
                             Lanjut

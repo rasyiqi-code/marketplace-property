@@ -9,9 +9,10 @@ interface OfferModalProps {
     listingPrice: number;
     isOpen: boolean;
     onClose: () => void;
+    propertyStatus?: 'sale' | 'rent';
 }
 
-export function OfferModal({ propertyId, listingPrice, isOpen, onClose }: OfferModalProps) {
+export function OfferModal({ propertyId, listingPrice, isOpen, onClose, propertyStatus = 'sale' }: OfferModalProps) {
     const router = useRouter();
     const [amount, setAmount] = useState(listingPrice);
     const [message, setMessage] = useState('');
@@ -36,10 +37,14 @@ export function OfferModal({ propertyId, listingPrice, isOpen, onClose }: OfferM
             }
 
             alert('Penawaran berhasil dikirim! Pantau statusnya di Dashboard.');
-            router.push('/dashboard/transactions?tab=offers'); // We will create this tab
+            router.push('/transactions?tab=offers');
             onClose();
-        } catch (error: any) {
-            alert(error.message);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Terjadi kesalahan';
+            alert(message);
+            if (message.includes('Unauthorized')) {
+                window.location.href = '/handler/sign-in';
+            }
         } finally {
             setIsLoading(false);
         }
@@ -55,12 +60,14 @@ export function OfferModal({ propertyId, listingPrice, isOpen, onClose }: OfferM
                     <X size={20} />
                 </button>
 
-                <h2 className="text-xl font-bold font-heading mb-1">Ajukan Penawaran</h2>
-                <p className="text-gray-500 text-sm mb-6">Mulai negosiasi harga dengan penjual.</p>
+                <h2 className="text-xl font-bold font-heading mb-1">Ajukan Penawaran {propertyStatus === 'rent' ? 'Sewa' : 'Harga'}</h2>
+                <p className="text-gray-500 text-sm mb-6">Mulai negosiasi {propertyStatus === 'rent' ? 'harga sewa' : 'harga'} dengan penjual.</p>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Harga Penawaran (IDR)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Harga Penawaran {propertyStatus === 'rent' ? '(per Periode)' : ''} (IDR)
+                        </label>
                         <div className="relative">
                             <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                             <input
