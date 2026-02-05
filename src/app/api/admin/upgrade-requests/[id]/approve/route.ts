@@ -17,7 +17,7 @@ export async function POST(
     });
 
     if (!dbUser || dbUser.role !== 'ADMIN') {
-        return NextResponse.json({ error: 'Unauthorized - Admin only' }, { status: 403 });
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 
     try {
@@ -25,12 +25,12 @@ export async function POST(
         const { adminNote } = body;
 
         // Get the upgrade request
-        const upgradeRequest = await (prisma.accountUpgradeRequest.findUnique({
+        const upgradeRequest = await prisma.accountUpgradeRequest.findUnique({
             where: { id: requestId },
-        }) as any);
+        });
 
         if (!upgradeRequest) {
-            return NextResponse.json({ error: 'Request not found' }, { status: 404 });
+            return NextResponse.json({ error: "Internal server error" }, { status: 500 });
         }
 
         if (upgradeRequest.status !== 'PENDING') {
@@ -40,22 +40,22 @@ export async function POST(
         }
 
         // Update request status
-        await (prisma.accountUpgradeRequest.update({
+        await prisma.accountUpgradeRequest.update({
             where: { id: requestId },
             data: {
                 status: 'APPROVED',
                 adminNote: adminNote || 'Request approved',
             },
-        }) as any);
+        });
 
         // Update user accountType and set verified
-        await (prisma.user.update({
+        await prisma.user.update({
             where: { id: upgradeRequest.userId },
             data: {
                 accountType: upgradeRequest.requestedType,
                 verified: true,
             },
-        }) as any);
+        });
 
         return NextResponse.json({
             success: true,
@@ -63,6 +63,8 @@ export async function POST(
         });
     } catch (error) {
         console.error('Error approving upgrade request:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({
+            error: error instanceof Error ? error.message : "Internal server error"
+        }, { status: 500 });
     }
 }

@@ -1,4 +1,4 @@
-import { MapPin, User, Phone, Mail, BadgeCheck } from 'lucide-react';
+import { User, Phone, Mail, BadgeCheck } from 'lucide-react';
 import { getPropertyBySlug, getRelatedProperties } from '@/lib/data/properties';
 import { PropertyCardMUI } from '@/components/PropertyCardMUI';
 import Image from 'next/image';
@@ -11,7 +11,7 @@ import { stackServerApp } from '@/lib/stack';
 export default async function PropertyDetailPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
     const property = await getPropertyBySlug(slug, 'rent');
-    const user = await stackServerApp.getUser();
+    await stackServerApp.getUser();
 
     if (!property) {
         notFound();

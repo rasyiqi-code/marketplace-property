@@ -31,7 +31,7 @@ async function main() {
         });
 
         let counter = 1;
-        let baseSlug = slug;
+        const baseSlug = slug;
         while (existing) {
             slug = `${baseSlug}-${counter}`;
             existing = await prisma.property.findUnique({

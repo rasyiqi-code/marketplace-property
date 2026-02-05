@@ -9,7 +9,7 @@ export default async function AdminDashboardPage() {
     // Count pending upgrade requests
     const pendingUpgradeRequests = await (prisma.accountUpgradeRequest.count({
         where: { status: 'PENDING' }
-    }) as any);
+    }));
 
     return (
         <div>

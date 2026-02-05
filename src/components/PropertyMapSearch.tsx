@@ -6,6 +6,7 @@ import L from 'leaflet';
 import { PropertyDTO } from '@/lib/data/properties';
 import { useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 // Fix for Leaflet default icon issue in Next.js
 const DefaultIcon = L.icon({
@@ -59,10 +60,11 @@ export default function PropertyMapSearch({ properties }: PropertyMapSearchProps
                         <Popup className="property-popup">
                             <div className="w-48">
                                 <div className="relative h-24 w-full mb-2 overflow-hidden rounded-md">
-                                    <img
+                                    <Image
                                         src={property.imageUrl}
                                         alt={property.title}
-                                        className="object-cover w-full h-full"
+                                        fill
+                                        className="object-cover"
                                     />
                                 </div>
                                 <h3 className="font-bold text-sm truncate">{property.title}</h3>

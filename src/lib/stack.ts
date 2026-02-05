@@ -23,6 +23,12 @@ export const stackServerApp = new StackServerApp({
  */
 const ADMIN_PERMISSION_ID = 'admin';
 
+// Type untuk permission dari Stack Auth
+interface Permission {
+    id: string;
+    [key: string]: unknown;
+}
+
 /**
  * Helper: Check if current user is admin
  * 
@@ -48,7 +54,7 @@ export async function isUserAdmin(): Promise<boolean> {
 
         // Check 2: Stack Auth project permission 'admin'
         const permissions = await user.listPermissions();
-        const hasAdminPermission = permissions.some((permission: any) => permission.id === 'admin');
+        const hasAdminPermission = permissions.some((permission: Permission) => permission.id === 'admin');
 
         return hasAdminPermission;
     } catch (error) {
@@ -81,7 +87,7 @@ export async function requireAdmin() {
 
     // Check 2: Stack Auth permission
     const permissions = await user.listPermissions();
-    const isAdmin = permissions.some((permission: any) => permission.id === ADMIN_PERMISSION_ID);
+    const isAdmin = permissions.some((permission: Permission) => permission.id === ADMIN_PERMISSION_ID);
 
     if (!isAdmin) {
         throw new Error('FORBIDDEN');

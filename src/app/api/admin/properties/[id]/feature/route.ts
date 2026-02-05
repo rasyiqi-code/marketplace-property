@@ -11,7 +11,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const { id } = await params;
 
     if (!userId) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 
     try {
@@ -22,12 +22,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         });
 
         if (dbUser?.role !== 'ADMIN') {
-            return NextResponse.json({ error: 'Unauthorized: Admin access required' }, { status: 403 });
+            return NextResponse.json({ error: "Internal server error" }, { status: 500 });
         }
 
         const property = await prisma.property.findUnique({ where: { id } });
         if (!property) {
-            return NextResponse.json({ error: 'Property not found' }, { status: 404 });
+            return NextResponse.json({ error: "Internal server error" }, { status: 500 });
         }
 
         const updated = await prisma.property.update({
@@ -41,6 +41,6 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     } catch (error) {
         console.error('Error toggling featured:', error);
-        return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 }

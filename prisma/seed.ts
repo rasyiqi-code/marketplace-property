@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -25,7 +25,7 @@ async function main() {
             verified: true,
             accountType: 'AGENT',
             role: 'USER',
-        } as any,
+        } as Prisma.UserCreateInput,
     });
     console.log('✓ Agent User created:', agentUser.email);
 
@@ -57,6 +57,48 @@ async function main() {
         });
     }
     console.log('✓ Facilities created:', facilitiesData.length);
+
+    // =========================================================================
+    // LISTING PACKAGES (Monetization)
+    // =========================================================================
+    const packagesData = [
+        {
+            name: 'Basic Topup (1 Listing)',
+            description: 'Tambah jatah 1 posting properti untuk User Individual',
+            price: 50000,
+            listingLimit: 1,
+            durationDays: 365,
+            type: 'TOPUP',
+        },
+        {
+            name: 'Agent Pro (10 Slot)',
+            description: 'Paket langganan untuk agen, dapat 10 slot listing aktif',
+            price: 250000,
+            listingLimit: 10,
+            durationDays: 30,
+            type: 'SUBSCRIPTION',
+        },
+        {
+            name: 'Agency Elite (Unlimited)',
+            description: 'Paket tak terbatas untuk agency besar',
+            price: 1500000,
+            listingLimit: 9999,
+            durationDays: 30,
+            type: 'SUBSCRIPTION',
+        }
+    ];
+
+    for (const pkg of packagesData) {
+        await prisma.listingPackage.upsert({
+            where: { id: pkg.name.toLowerCase().replace(/ /g, '-') }, // Using name as ID for seed consistency
+            update: {},
+            create: {
+                id: pkg.name.toLowerCase().replace(/ /g, '-'),
+                ...pkg
+            } as Prisma.ListingPackageCreateInput,
+        });
+    }
+    console.log('✓ Listing Packages created:', packagesData.length);
 
     // =========================================================================
     // PROPERTIES

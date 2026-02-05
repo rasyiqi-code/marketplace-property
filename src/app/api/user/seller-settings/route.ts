@@ -5,20 +5,20 @@ import { NextResponse } from 'next/server';
 export async function POST(request: Request) {
     try {
         const user = await stackServerApp.getUser();
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        if (!user) return NextResponse.json({ error: "Internal server error" }, { status: 500 });
 
         const body = await request.json();
         const { whatsappMessage } = body;
 
         const updatedUser = await prisma.user.upsert({
             where: { id: user.id },
-            update: { whatsappMessage } as any,
+            update: { whatsappMessage },
             create: {
                 id: user.id,
                 email: user.primaryEmail || '',
                 name: user.displayName || 'User',
                 whatsappMessage
-            } as any
+            }
         });
 
         return NextResponse.json(updatedUser);
@@ -33,11 +33,11 @@ export async function POST(request: Request) {
 export async function GET() {
     try {
         const user = await stackServerApp.getUser();
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        if (!user) return NextResponse.json({ error: "Internal server error" }, { status: 500 });
 
         const dbUser = await prisma.user.findUnique({
             where: { id: user.id },
-            select: { whatsappMessage: true } as any
+            select: { whatsappMessage: true }
         });
 
         return NextResponse.json(dbUser || { whatsappMessage: null });

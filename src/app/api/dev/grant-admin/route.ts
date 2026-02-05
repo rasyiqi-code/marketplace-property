@@ -1,6 +1,11 @@
 import { stackServerApp } from '@/lib/stack';
 import { NextResponse } from 'next/server';
 
+interface Permission {
+    id: string;
+    [key: string]: unknown;
+}
+
 /**
  * Development Endpoint: Grant Admin Permission
  * 
@@ -17,7 +22,7 @@ export async function POST() {
         const user = await stackServerApp.getUser({ or: 'redirect' });
 
         if (!user) {
-            return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+            return NextResponse.json({ error: "Internal server error" }, { status: 500 });
         }
 
         // Grant admin permission to current user
@@ -28,11 +33,11 @@ export async function POST() {
             message: `Admin permission granted to user: ${user.primaryEmail}`,
             userId: user.id,
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Error granting admin permission:', error);
 
         return NextResponse.json({
-            error: error.message || 'Failed to grant admin permission',
+            error: (error as Error).message || 'Failed to grant admin permission',
             details: 'Make sure permission "admin" is created in Stack Auth Dashboard (Settings → Permissions)',
         }, { status: 500 });
     }
@@ -46,21 +51,21 @@ export async function GET() {
         const user = await stackServerApp.getUser();
 
         if (!user) {
-            return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+            return NextResponse.json({ error: "Internal server error" }, { status: 500 });
         }
 
         const permissions = await user.listPermissions();
-        const hasAdmin = permissions.some((p: any) => p.id === 'admin');
+        const hasAdmin = permissions.some((p: Permission) => p.id === 'admin');
 
         return NextResponse.json({
             userId: user.id,
             email: user.primaryEmail,
             hasAdmin,
-            allPermissions: permissions.map((p: any) => p.id),
+            allPermissions: permissions.map((p: Permission) => p.id),
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Error checking permissions:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 }
 
@@ -72,7 +77,7 @@ export async function DELETE() {
         const user = await stackServerApp.getUser({ or: 'redirect' });
 
         if (!user) {
-            return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+            return NextResponse.json({ error: "Internal server error" }, { status: 500 });
         }
 
         // Revoke admin permission
@@ -82,8 +87,8 @@ export async function DELETE() {
             success: true,
             message: `Admin permission revoked from user: ${user.primaryEmail}`,
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Error revoking admin permission:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 }

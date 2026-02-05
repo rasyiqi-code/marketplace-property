@@ -9,7 +9,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const { id } = await params;
 
     if (!userId) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 
     try {
@@ -24,14 +24,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         });
 
         if (!property) {
-            return NextResponse.json({ error: 'Property not found' }, { status: 404 });
+            return NextResponse.json({ error: "Internal server error" }, { status: 500 });
         }
 
         const isAdmin = dbUser?.role === 'ADMIN';
         const isOwner = property.userId === userId;
 
         if (!isOwner && !isAdmin) {
-            return NextResponse.json({ error: 'Unauthorized: You do not own this property' }, { status: 403 });
+            return NextResponse.json({ error: "Internal server error" }, { status: 500 });
         }
 
         const body = await request.json();
@@ -57,7 +57,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         return NextResponse.json(updatedProperty);
     } catch (error) {
         console.error('Error updating property:', error);
-        return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 }
 
@@ -68,7 +68,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     const { id } = await params;
 
     if (!userId) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 
     try {
@@ -83,14 +83,14 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
         });
 
         if (!property) {
-            return NextResponse.json({ error: 'Property not found' }, { status: 404 });
+            return NextResponse.json({ error: "Internal server error" }, { status: 500 });
         }
 
         const isAdmin = dbUser?.role === 'ADMIN';
         const isOwner = property.userId === userId;
 
         if (!isOwner && !isAdmin) {
-            return NextResponse.json({ error: 'Unauthorized: You do not own this property' }, { status: 403 });
+            return NextResponse.json({ error: "Internal server error" }, { status: 500 });
         }
 
         await prisma.property.delete({
@@ -100,6 +100,6 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
         return NextResponse.json({ message: 'Property deleted successfully' });
     } catch (error) {
         console.error('Error deleting property:', error);
-        return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 }

@@ -10,7 +10,29 @@ import {
 } from './types';
 import { formatPrice } from './utils';
 
-function mapToPropertyDTO(p: any): PropertyDTO {
+type PropertyWithBasicFields = Prisma.PropertyGetPayload<{
+    select: {
+        id: true;
+        title: true;
+        slug: true;
+        price: true;
+        location: true;
+        bedrooms: true;
+        bathrooms: true;
+        area: true;
+        type: true;
+        status: true;
+        images: true;
+        featured: true;
+        latitude: true;
+        longitude: true;
+        mapsEmbed: true;
+        videoUrl: true;
+        virtualTourUrl: true;
+    }
+}>;
+
+function mapToPropertyDTO(p: PropertyWithBasicFields): PropertyDTO {
     return {
         id: p.id,
         title: p.title,
@@ -41,8 +63,28 @@ export async function getUserProperties(userId: string): Promise<PropertyDTO[]> 
     return properties.map(mapToPropertyDTO);
 }
 
+type PropertyWithRelations = Prisma.PropertyGetPayload<{
+    include: {
+        user: {
+            select: {
+                name: true;
+                email: true;
+                phone: true;
+                photo: true;
+                whatsappMessage: true;
+                verified: true;
+                accountType: true;
+                bio: true;
+                company: true;
+            }
+        };
+        propertyImages: { orderBy: { sortOrder: 'asc' } };
+        facilities: { include: { facility: true } };
+    }
+}>;
+
 export async function getPropertyById(id: string): Promise<PropertyDetailDTO | null> {
-    const property = await (prisma.property.findUnique({
+    const property = await prisma.property.findUnique({
         where: { id },
         include: {
             user: {
@@ -56,12 +98,12 @@ export async function getPropertyById(id: string): Promise<PropertyDetailDTO | n
                     accountType: true,
                     bio: true,
                     company: true
-                } as any
+                }
             },
             propertyImages: { orderBy: { sortOrder: 'asc' } },
             facilities: { include: { facility: true } },
         },
-    }) as any);
+    }) as PropertyWithRelations | null;
 
     if (!property) return null;
 
@@ -81,13 +123,13 @@ export async function getPropertyById(id: string): Promise<PropertyDetailDTO | n
             bio: property.user?.bio || null,
             company: property.user?.company || null,
         },
-        propertyImages: property.propertyImages.map((img: any) => ({
+        propertyImages: property.propertyImages.map((img) => ({
             id: img.id,
             url: img.url,
             caption: img.caption,
             isPrimary: img.isPrimary,
         })),
-        facilities: property.facilities.map((pf: any) => ({
+        facilities: property.facilities.map((pf) => ({
             id: pf.facility.id,
             name: pf.facility.name,
             icon: pf.facility.icon,
@@ -105,7 +147,7 @@ export async function getPropertyById(id: string): Promise<PropertyDetailDTO | n
 
 export async function getPropertyBySlug(slug: string, status: string): Promise<PropertyDetailDTO | null> {
     // Try to find by slug first
-    let property = await (prisma.property as any).findFirst({
+    let property = await prisma.property.findFirst({
         where: { slug, status },
         include: {
             user: {
@@ -119,16 +161,16 @@ export async function getPropertyBySlug(slug: string, status: string): Promise<P
                     accountType: true,
                     bio: true,
                     company: true
-                } as any
+                }
             },
             propertyImages: { orderBy: { sortOrder: 'asc' } },
             facilities: { include: { facility: true } },
         },
-    });
+    }) as PropertyWithRelations | null;
 
     // Fallback: try to find by ID if slug search fails (handling old IDs or stale data)
     if (!property) {
-        property = await (prisma.property as any).findFirst({
+        property = await prisma.property.findFirst({
             where: { id: slug, status },
             include: {
                 user: {
@@ -142,12 +184,12 @@ export async function getPropertyBySlug(slug: string, status: string): Promise<P
                         accountType: true,
                         bio: true,
                         company: true
-                    } as any
+                    }
                 },
                 propertyImages: { orderBy: { sortOrder: 'asc' } },
                 facilities: { include: { facility: true } },
             },
-        });
+        }) as PropertyWithRelations | null;
     }
 
     if (!property) return null;
@@ -168,13 +210,13 @@ export async function getPropertyBySlug(slug: string, status: string): Promise<P
             bio: property.user?.bio || null,
             company: property.user?.company || null,
         },
-        propertyImages: property.propertyImages.map((img: any) => ({
+        propertyImages: property.propertyImages.map((img) => ({
             id: img.id,
             url: img.url,
             caption: img.caption,
             isPrimary: img.isPrimary,
         })),
-        facilities: property.facilities.map((pf: any) => ({
+        facilities: property.facilities.map((pf) => ({
             id: pf.facility.id,
             name: pf.facility.name,
             icon: pf.facility.icon,

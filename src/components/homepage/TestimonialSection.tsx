@@ -88,7 +88,7 @@ export function TestimonialSection() {
                                 color: 'grey.800',
                             }}
                         >
-                            "{testimonial.quote}"
+                            &ldquo;{testimonial.quote}&rdquo;
                         </Typography>
 
                         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>

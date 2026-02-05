@@ -136,7 +136,7 @@ export function UpgradeRequestModal({ isOpen, onClose, onSuccess }: UpgradeReque
                         </label>
                         <select
                             value={requestedType}
-                            onChange={(e) => setRequestedType(e.target.value as any)}
+                            onChange={(e) => setRequestedType(e.target.value as 'AGENT' | 'AGENCY')}
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                             required
                             disabled={isSubmitting}

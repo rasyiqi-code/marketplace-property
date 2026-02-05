@@ -125,12 +125,12 @@ export function PropertyDetailTabs({ property }: Props) {
                                 <div>
                                     <h3 className="text-sm font-bold text-primary mb-2">💡 Quick Highlight</h3>
                                     <p className="text-sm text-primary/80 leading-relaxed font-medium italic">
-                                        "{property.bedrooms} Kamar Tidur & {property.bathrooms} Kamar Mandi di {property.location}. Properti {property.condition || 'siap huni'} dengan luas {property.area} m²."
+                                        &quot;{property.bedrooms} Kamar Tidur & {property.bathrooms} Kamar Mandi di {property.location}. Properti {property.condition || 'siap huni'} dengan luas {property.area} m².&quot;
                                     </p>
                                 </div>
                                 <div className="mt-4 flex items-center gap-3 pt-4 border-t border-primary/10">
                                     <div className="flex -space-x-2">
-                                        {property.facilities.slice(0, 3).map((f, i) => (
+                                        {property.facilities.slice(0, 3).map((f) => (
                                             <div key={f.id} className="w-6 h-6 rounded-full border-2 border-white bg-primary/20 flex items-center justify-center text-[10px] shadow-sm transform hover:z-10 transition-all cursor-help" title={f.name}>
                                                 {f.icon || '✨'}
                                             </div>

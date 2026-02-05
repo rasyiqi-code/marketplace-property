@@ -29,12 +29,12 @@ export async function getUsers(): Promise<UserDTO[]> {
 
         const propertyCountMap = new Map(localData.map(d => [d.id, d._count.properties]));
 
-        return stackUsers.map((user: any) => ({
+        return stackUsers.map((user) => ({
             id: user.id,
             name: user.displayName || null,
             email: user.primaryEmail || '',
-            role: (user.metadata?.role as string) || 'USER', // Ambil role dari metadata Stack
-            createdAt: new Date(user.createdAt || Date.now()),
+            role: ((user as unknown as { metadata?: { role?: string } }).metadata?.role as string) || 'USER',
+            createdAt: new Date((user as unknown as { createdAt?: string | number }).createdAt || Date.now()),
             _count: {
                 properties: propertyCountMap.get(user.id) || 0,
             },

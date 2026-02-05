@@ -1,5 +1,4 @@
 import { FilterSidebar } from '@/components/filters/FilterSidebar';
-import { PropertyCardMUI } from '@/components/PropertyCardMUI';
 import { getProperties } from '@/lib/data/properties';
 import { SearchResults } from '@/components/search/SearchResults';
 

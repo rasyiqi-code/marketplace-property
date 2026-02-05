@@ -1,4 +1,4 @@
-                                                                                                                                                            import { stackServerApp } from '@/lib/stack';
+import { stackServerApp } from '@/lib/stack';
 import { prisma } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
@@ -8,8 +8,8 @@ export async function POST(request: Request) {
     const userId = user?.id;
 
     if (!userId) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }                            
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    }
 
     try {
         const body = await request.json();
@@ -17,8 +17,8 @@ export async function POST(request: Request) {
 
         // Validasi requestedType
         if (!['AGENT', 'AGENCY'].includes(requestedType)) {
-            return NextResponse.json({ error: 'Invalid requestedType. Must be AGENT or AGENCY' }, { status: 400 });
-        } 
+            return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+        }
 
         // Upsert user - create if not exists
         const currentUser = await prisma.user.upsert({
@@ -40,12 +40,12 @@ export async function POST(request: Request) {
         }
 
         // Check for existing pending request
-        const existingRequest = await (prisma.accountUpgradeRequest.findFirst({
+        const existingRequest = await prisma.accountUpgradeRequest.findFirst({
             where: {
                 userId,
                 status: 'PENDING',
             },
-        }) as any);
+        });
 
         if (existingRequest) {
             return NextResponse.json({
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
         }
 
         // Create upgrade request
-        const upgradeRequest = await (prisma.accountUpgradeRequest.create({
+        const upgradeRequest = await prisma.accountUpgradeRequest.create({
             data: {
                 userId,
                 requestedType,
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
                 reason: reason || null,
                 status: 'PENDING',
             },
-        }) as any);
+        });
 
         return NextResponse.json({
             success: true,
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
         });
     } catch (error) {
         console.error('Error creating upgrade request:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 }
 
@@ -82,17 +82,17 @@ export async function GET() {
     const userId = user?.id;
 
     if (!userId) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 
     try {
-        const request = await (prisma.accountUpgradeRequest.findFirst({
+        const request = await prisma.accountUpgradeRequest.findFirst({
             where: {
                 userId,
                 status: { in: ['PENDING', 'APPROVED', 'REJECTED'] },
             },
             orderBy: { createdAt: 'desc' },
-        }) as any);
+        });
 
         if (!request) {
             return NextResponse.json({
@@ -113,6 +113,6 @@ export async function GET() {
         });
     } catch (error) {
         console.error('Error fetching upgrade request:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 }

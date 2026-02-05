@@ -4,6 +4,8 @@ import './globals.css';
 import { ThemeRegistry } from '@/components/ThemeRegistry';
 import { StackProvider, StackTheme } from "@stackframe/stack";
 import { stackServerApp } from "@/lib/stack";
+import Script from 'next/script';
+import { CheckoutHandler } from '@/components/payment/CheckoutHandler';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 const outfit = Outfit({ subsets: ['latin'], variable: '--font-heading' });
@@ -31,9 +33,17 @@ export default function RootLayout({
           <StackTheme>
             <ThemeRegistry>
               {children}
+              <CheckoutHandler />
             </ThemeRegistry>
           </StackTheme>
         </StackProvider>
+        <Script
+          src={process.env.MIDTRANS_IS_PRODUCTION === 'true'
+            ? "https://app.midtrans.com/snap/snap.js"
+            : "https://app.sandbox.midtrans.com/snap/snap.js"}
+          data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );

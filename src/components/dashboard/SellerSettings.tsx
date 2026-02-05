@@ -63,7 +63,7 @@ export function SellerSettings() {
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none"
                     />
                     <p className="text-xs text-gray-400 italic">
-                        Preview: Halo, saya tertarik dengan properti "Rumah Mewah di Jakarta"...
+                        Preview: Halo, saya tertarik dengan properti &quot;Rumah Mewah di Jakarta&quot;...
                     </p>
                 </div>
 

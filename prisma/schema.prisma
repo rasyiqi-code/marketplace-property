@@ -33,6 +33,11 @@ model User {
   photo           String?                            // Foto profil
   
   upgradeRequests AccountUpgradeRequest[]
+  
+  // === MONETIZATION ===
+  listingLimit    Int       @default(1)    // Kuota dasar untuk user baru
+  packageExpiry   DateTime?                // Masa berlaku paket (untuk AGENT/AGENCY)
+  orders          Order[]
 }
 
 
@@ -145,5 +150,36 @@ model AccountUpgradeRequest {
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   @@index([userId])
+  @@index([status])
+}
+
+model ListingPackage {
+  id           String   @id @default(cuid())
+  name         String
+  description  String?
+  price        Decimal
+  listingLimit Int      // Kuota listing yang diberikan
+  durationDays Int      @default(30)
+  type         String   @default("SUBSCRIPTION") // SUBSCRIPTION | TOPUP
+  createdAt    DateTime @default(now())
+  orders       Order[]
+}
+
+model Order {
+  id          String   @id @default(cuid())
+  userId      String
+  packageId   String
+  amount      Decimal
+  status      String   @default("PENDING") // PENDING | PAID | EXPIRED | CANCELLED
+  snapToken   String?  // Untuk Midtrans Snap API
+  snapUrl     String?  // URL redirect pembayaran
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  package     ListingPackage @relation(fields: [packageId], references: [id])
+
+  @@index([userId])
+  @@index([packageId])
   @@index([status])
 }

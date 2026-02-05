@@ -15,9 +15,9 @@ export default async function AdminUpgradeRequestsPage() {
             },
         },
         orderBy: { createdAt: 'desc' },
-    }) as any);
+    }));
 
-    const pendingCount = requests.filter((r: any) => r.status === 'PENDING').length;
+    const pendingCount = requests.filter((r: { status: string }) => r.status === 'PENDING').length;
 
     return (
         <div className="p-6">
@@ -79,7 +79,7 @@ export default async function AdminUpgradeRequestsPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
-                            {requests.map((request: any) => (
+                            {requests.map((request: { id: string; status: string; user: { name: string | null; email: string }; requestedType: string; currentType: string; reason: string | null; createdAt: Date; adminNote: string | null }) => (
                                 <tr key={request.id} className="hover:bg-gray-50">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-2">

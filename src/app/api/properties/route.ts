@@ -1,5 +1,6 @@
 import { stackServerApp } from '@/lib/stack';
 import { prisma } from '@/lib/db';
+import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
@@ -7,7 +8,7 @@ export async function POST(request: Request) {
     const userId = user?.id;
 
     if (!userId) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 
     try {
@@ -29,7 +30,7 @@ export async function POST(request: Request) {
         }
 
         // Build duplicate check conditions
-        const conditions: any[] = [
+        const conditions: Prisma.PropertyWhereInput[] = [
             {
                 // Exact physical spec match at same address
                 address: body.address,
@@ -59,7 +60,7 @@ export async function POST(request: Request) {
         const existingProperty = await prisma.property.findFirst({
             where: {
                 OR: conditions
-            } as any
+            }
         });
 
         if (existingProperty) {
@@ -71,7 +72,7 @@ export async function POST(request: Request) {
 
         // Sinkronisasi data user dari Stack Auth ke database lokal
         // Mencegah Foreign Key Constraint error jika user belum ada di DB lokal
-        await prisma.user.upsert({
+        const dbUser = await prisma.user.upsert({
             where: { id: userId },
             update: {
                 email: user.primaryEmail || '',
@@ -82,8 +83,24 @@ export async function POST(request: Request) {
                 email: user.primaryEmail || '',
                 name: user.displayName,
                 role: 'USER', // Default role
+                listingLimit: 1, // Default 1 free listing for new users
             },
         });
+
+        // 3. Validasi Kuota Listing
+        const propertyCount = await prisma.property.count({
+            where: { userId: userId }
+        });
+
+        if (propertyCount >= dbUser.listingLimit) {
+            return NextResponse.json(
+                {
+                    error: 'Kuota Listing Habis',
+                    message: `Anda telah menggunakan seluruh kuota listing Anda (${dbUser.listingLimit}). Silakan beli paket tambahan untuk mendaftarkan properti baru.`
+                },
+                { status: 403 }
+            );
+        }
 
 
         const property = await prisma.property.create({
@@ -112,8 +129,7 @@ export async function POST(request: Request) {
                     create: {
                         url: body.imageUrl,
                         hash: body.imageHash || null,
-                        isPrimary: true,
-                    } as any
+                    }
                 },
                 mapsEmbed: mapsEmbed || null,
                 videoUrl: videoUrl || null,
@@ -136,12 +152,14 @@ export async function POST(request: Request) {
                         };
                     }))
                 } : undefined,
-            } as any,
+            },
         });
 
         return NextResponse.json(property, { status: 201 });
     } catch (error) {
         console.error('Error creating property:', error);
-        return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({
+            error: error instanceof Error ? error.message : "Internal server error"
+        }, { status: 500 });
     }
 }

@@ -134,6 +134,13 @@ export function PostAdWizard({ initialData, isEditMode = false, propertyId }: Po
                         setIsLoading(false);
                         return; // Stop processing
                     }
+                    if (res.status === 403) {
+                        if (confirm(`${errorData.message}\n\nIngin melihat paket listing kami?`)) {
+                            router.push('/pricing');
+                        }
+                        setIsLoading(false);
+                        return;
+                    }
                     throw new Error(errorData.error || 'Gagal membuat properti');
                 }
 

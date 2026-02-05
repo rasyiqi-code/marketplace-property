@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 
 interface MapPickerProps {
     lat?: number;
@@ -10,17 +10,11 @@ interface MapPickerProps {
 }
 
 export default function MapPicker({ lat, lng, mapsEmbed, onChange }: MapPickerProps) {
-    const [embedInput, setEmbedInput] = useState(mapsEmbed || '');
-    const [previewSrc, setPreviewSrc] = useState('');
+    const [inputValue, setInputValue] = useState(mapsEmbed || '');
+    const hasInitialized = useRef(false);
 
-    useEffect(() => {
-        if (mapsEmbed) {
-            setEmbedInput(mapsEmbed);
-            extractAndPreview(mapsEmbed);
-        }
-    }, [mapsEmbed]);
-
-    const extractAndPreview = (input: string) => {
+    // Helper: Ekstraksi src dari iframe atau link
+    const getPreviewSrc = useCallback((input: string) => {
         let src = '';
         if (input.includes('<iframe')) {
             const match = input.match(/src="([^"]+)"/);
@@ -28,27 +22,45 @@ export default function MapPicker({ lat, lng, mapsEmbed, onChange }: MapPickerPr
         } else if (input.startsWith('http')) {
             src = input;
         }
+        return src;
+    }, []);
 
-        setPreviewSrc(src);
+    // Derived state: previewSrc diturunkan langsung dari inputValue
+    const previewSrc = useMemo(() => getPreviewSrc(inputValue), [inputValue, getPreviewSrc]);
 
-        // Ekstraksi Koordinat dari string Embed untuk anti-duplikasi
-        // Contoh: !2d113.2856!3d-6.8940
+    // Helper: Ekstraksi koordinat
+    const extractCoords = useCallback((src: string) => {
         const latMatch = src.match(/!3d(-?\d+\.\d+)/);
         const lngMatch = src.match(/!2d(-?\d+\.\d+)/);
+        return {
+            extractedLat: latMatch ? parseFloat(latMatch[1]) : null,
+            extractedLng: lngMatch ? parseFloat(lngMatch[1]) : null
+        };
+    }, []);
 
-        if (latMatch && lngMatch) {
-            const extractedLat = parseFloat(latMatch[1]);
-            const extractedLng = parseFloat(lngMatch[1]);
-            onChange(extractedLat, extractedLng, input);
-        } else {
-            // Jika tidak ada koordinat (misal link pendek), simpan embed saja
-            onChange(lat || 0, lng || 0, input);
+    // Effect untuk sinkronisasi koordinat ke parent saat inputValue/previewSrc berubah
+    useEffect(() => {
+        // Lewati sinkronisasi jika ini adalah render pertama dan sudah di-initialize via prop di state
+        if (!hasInitialized.current) {
+            hasInitialized.current = true;
+            // Jika ada mapsEmbed awal, kita tetap perlu hitung koordinatnya sekalipun props lat/lng mungkin sudah ada
+            // Tapi kita tidak panggil setState di sini, kita panggil onChange (parent update)
         }
-    };
+
+        const { extractedLat, extractedLng } = extractCoords(previewSrc);
+
+        if (extractedLat !== null && extractedLng !== null) {
+            onChange(extractedLat, extractedLng, inputValue);
+        } else if (inputValue === '') {
+            onChange(0, 0, '');
+        } else {
+            // Jika tidak ada koordinat (misal link pendek), gunakan lat/lng lama atau default
+            onChange(lat || 0, lng || 0, inputValue);
+        }
+    }, [inputValue, previewSrc, lat, lng, onChange, extractCoords]);
 
     const handleInputChange = (val: string) => {
-        setEmbedInput(val);
-        extractAndPreview(val);
+        setInputValue(val);
     };
 
     return (
@@ -69,7 +81,7 @@ export default function MapPicker({ lat, lng, mapsEmbed, onChange }: MapPickerPr
             <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">Tempel Kode Embed / Iframe Google Maps</label>
                 <textarea
-                    value={embedInput}
+                    value={inputValue}
                     onChange={(e) => handleInputChange(e.target.value)}
                     placeholder='<iframe src="https://www.google.com/maps/embed?..." ...></iframe>'
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none font-mono text-xs h-24"

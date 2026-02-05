@@ -11,11 +11,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const { id } = await params;
 
     if (!userId) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 
     if (userId === id) {
-        return NextResponse.json({ error: 'Forbidden: You cannot change your own role' }, { status: 403 });
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 
     try {
@@ -25,14 +25,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         });
 
         if (dbUser?.role !== 'ADMIN') {
-            return NextResponse.json({ error: 'Unauthorized: Admin access required' }, { status: 403 });
+            return NextResponse.json({ error: "Internal server error" }, { status: 500 });
         }
 
         const body = await request.json();
         const { role } = body;
 
         // 1. Update di Stack Auth metadata agar konsisten
-        // @ts-ignore - Menggunakan internal/admin update jika tersedia
+        // @ts-expect-error - Menggunakan internal/admin update jika tersedia
         await stackServerApp.updateUser(id, {
             metadata: { role }
         });
@@ -47,6 +47,6 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     } catch (error) {
         console.error('Error updating user role:', error);
-        return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 }

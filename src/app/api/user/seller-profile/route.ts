@@ -8,7 +8,7 @@ export async function GET() {
     const userId = user?.id;
 
     if (!userId) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 
     try {
@@ -27,13 +27,13 @@ export async function GET() {
                 company: true,
                 accountType: true,
                 photo: true,
-            } as any,
+            },
         });
 
         return NextResponse.json(userProfile);
     } catch (error) {
         console.error('Error fetching seller profile:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 }
 
@@ -43,21 +43,21 @@ export async function POST(request: Request) {
     const userId = user?.id;
 
     if (!userId) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 
     try {
         const body = await request.json();
         const { phone, bio, company } = body;
 
-        const updatedUser = await (prisma.user.update({
+        const updatedUser = await prisma.user.update({
             where: { id: userId },
             data: {
                 phone: phone || null,
                 bio: bio || null,
                 company: company || null,
             },
-        }) as any);
+        });
 
         return NextResponse.json({
             success: true,
@@ -70,6 +70,6 @@ export async function POST(request: Request) {
         });
     } catch (error) {
         console.error('Error updating seller profile:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 }

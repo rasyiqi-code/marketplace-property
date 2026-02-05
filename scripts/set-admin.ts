@@ -12,7 +12,7 @@ async function setAdmin(identifier: string) {
             data: { role: 'ADMIN' },
         });
         console.log(`✓ Berhasil! User ${user.email} (ID: ${user.id}) sekarang adalah ADMIN.`);
-    } catch (error) {
+    } catch (_error) {
         console.error('Error: User tidak ditemukan di database lokal.');
         console.log('Tips: Pastikan user sudah pernah login ke aplikasi minimal satu kali.');
     } finally {

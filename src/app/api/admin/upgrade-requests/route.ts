@@ -13,14 +13,14 @@ export async function GET(request: Request) {
     });
 
     if (!dbUser || dbUser.role !== 'ADMIN') {
-        return NextResponse.json({ error: 'Unauthorized - Admin only' }, { status: 403 });
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
 
     try {
-        const requests = await (prisma.accountUpgradeRequest.findMany({
+        const requests = await prisma.accountUpgradeRequest.findMany({
             where: status ? { status } : undefined,
             include: {
                 user: {
@@ -32,11 +32,13 @@ export async function GET(request: Request) {
                 },
             },
             orderBy: { createdAt: 'desc' },
-        }) as any);
+        });
 
         return NextResponse.json({ requests });
     } catch (error) {
         console.error('Error fetching upgrade requests:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({
+            error: error instanceof Error ? error.message : "Internal server error"
+        }, { status: 500 });
     }
 }

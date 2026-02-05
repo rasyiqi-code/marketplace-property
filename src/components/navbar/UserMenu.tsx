@@ -13,7 +13,6 @@ import {
     Person,
     Logout,
     ArrowDropDown,
-    ShoppingCart,
     House,
 } from '@mui/icons-material';
 import Link from 'next/link';

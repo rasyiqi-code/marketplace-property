@@ -5,14 +5,14 @@ import { NextResponse } from 'next/server';
 export async function POST(request: Request) {
     try {
         const user = await stackServerApp.getUser();
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        if (!user) return NextResponse.json({ error: "Internal server error" }, { status: 500 });
 
         const body = await request.json();
         const { bankName, bankAccount, bankHolder } = body;
 
         const updatedUser = await prisma.user.upsert({
             where: { id: user.id },
-            update: { bankName, bankAccount, bankHolder } as any,
+            update: { bankName, bankAccount, bankHolder },
             create: {
                 id: user.id,
                 email: user.primaryEmail || '',
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
                 bankName,
                 bankAccount,
                 bankHolder
-            } as any
+            }
         });
 
         return NextResponse.json(updatedUser);
@@ -35,11 +35,11 @@ export async function POST(request: Request) {
 export async function GET() {
     try {
         const user = await stackServerApp.getUser();
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        if (!user) return NextResponse.json({ error: "Internal server error" }, { status: 500 });
 
         const dbUser = await prisma.user.findUnique({
             where: { id: user.id },
-            select: { bankName: true, bankAccount: true, bankHolder: true } as any
+            select: { bankName: true, bankAccount: true, bankHolder: true }
         });
 
         return NextResponse.json(dbUser || {});
