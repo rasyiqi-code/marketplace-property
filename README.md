@@ -43,3 +43,30 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Monetization System
+
+The project implements a comprehensive monetization system for property listings.
+
+### 1. Listing Limits & Quotas
+- **Default Limit**: New users start with **1 listing slot**.
+- **Top-Up Model**: Purchasing a package adds to the *cumulative* limit. It is not a tier-replacement system.
+    - Example: User has 1 slot + buys 5 slots = 6 total slots.
+- **Enforcement**:
+    - Checked at `/api/properties` (POST).
+    - If `propertyCount >= listingLimit`, the API returns `403 Forbidden`.
+    - Frontend (`PostAdWizard`) handles this by redirecting to `/pricing`.
+
+### 2. Account Types
+- **Types**: `INDIVIDUAL` (Default), `AGENT`, `AGENCY`.
+- **Purpose**: Primarily for verification status and professional branding.
+- **Upgrade Flow**:
+    1. User submits request via `/account-settings`.
+    2. Admin reviews in Admin Dashboard.
+    3. Upon approval, `User.accountType` is updated.
+
+### 3. Payment Flow
+- **Provider**: Midtrans (Snap/Popup).
+- **Mechanism**:
+    - `CheckoutProvider` handles the UI and Snap token retrieval.
+    - Webhook (`/api/payment/webhook`) updates the database upon `settlement` or `capture`.

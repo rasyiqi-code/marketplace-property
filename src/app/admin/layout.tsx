@@ -54,7 +54,11 @@ export default async function AdminLayout({
                     <Link href="/admin/settings" className="flex items-center px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white font-medium rounded-lg transition-colors">
                         ⚙️ Settings
                     </Link>
+                    <Link href="/admin/packages" className="flex items-center px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white font-medium rounded-lg transition-colors">
+                        📦 Paket Listing
+                    </Link>
                 </div>
+
 
                 <div className="absolute bottom-0 left-0 w-full p-4 border-t border-slate-800">
                     <div className="flex items-center gap-3 mb-4 px-2">

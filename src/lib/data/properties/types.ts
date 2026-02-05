@@ -11,6 +11,8 @@ export interface PropertyDTO {
     status: 'sale' | 'rent';
     imageUrl: string;
     featured: boolean;
+    priority?: number;
+    urgency?: 'NONE' | 'HOT_DEAL' | 'DISTRESS_SALE';
     latitude?: number | null;
     longitude?: number | null;
     mapsEmbed?: string | null;

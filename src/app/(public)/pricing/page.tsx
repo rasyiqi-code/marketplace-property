@@ -2,6 +2,7 @@ import { prisma } from '@/lib/db';
 import { ListingPackage } from '@prisma/client';
 import { stackServerApp } from '@/lib/stack';
 import Link from 'next/link';
+import { CheckoutButton } from '@/components/payment/CheckoutButton';
 
 export default async function PricingPage() {
     const packages = await prisma.listingPackage.findMany({
@@ -71,7 +72,11 @@ export default async function PricingPage() {
                             </li>
                         </ul>
 
-                        <CheckoutButton packageId={pkg.id} isLoggedIn={!!user} />
+                        <CheckoutButton
+                            packageId={pkg.id}
+                            isLoggedIn={!!user}
+                            className="py-4 bg-primary text-black rounded-xl font-bold hover:bg-white hover:scale-[1.02] transition-all"
+                        />
                     </div>
                 ))}
             </div>
@@ -79,25 +84,4 @@ export default async function PricingPage() {
     );
 }
 
-// Client Component for Checkout logic
-function CheckoutButton({ packageId, isLoggedIn }: { packageId: string, isLoggedIn: boolean }) {
-    if (!isLoggedIn) {
-        return (
-            <Link
-                href="/handler/sign-in"
-                className="block w-full text-center py-4 bg-primary text-black rounded-xl font-bold hover:bg-white hover:scale-[1.02] transition-all"
-            >
-                Login untuk Membeli
-            </Link>
-        );
-    }
 
-    return (
-        <button
-            data-package={packageId}
-            className="w-full py-4 bg-primary text-black rounded-xl font-bold hover:bg-white hover:scale-[1.02] transition-all checkout-trigger"
-        >
-            Beli Sekarang
-        </button>
-    );
-}

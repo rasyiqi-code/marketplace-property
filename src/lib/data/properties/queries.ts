@@ -29,10 +29,15 @@ type PropertyWithBasicFields = Prisma.PropertyGetPayload<{
         mapsEmbed: true;
         videoUrl: true;
         virtualTourUrl: true;
+        priority: true;
+        urgency: true;
     }
+
 }>;
 
-function mapToPropertyDTO(p: PropertyWithBasicFields): PropertyDTO {
+// Helper to map Prisma result to DTO
+function mapToPropertyDTO(p: any): PropertyDTO {
+
     return {
         id: p.id,
         title: p.title,
@@ -51,7 +56,10 @@ function mapToPropertyDTO(p: PropertyWithBasicFields): PropertyDTO {
         mapsEmbed: p.mapsEmbed,
         videoUrl: p.videoUrl,
         virtualTourUrl: p.virtualTourUrl,
+        priority: p.priority,
+        urgency: p.urgency as 'NONE' | 'HOT_DEAL' | 'DISTRESS_SALE',
     };
+
 }
 
 export async function getUserProperties(userId: string): Promise<PropertyDTO[]> {
@@ -366,8 +374,12 @@ export async function getProperties(filters: SearchFilters): Promise<PropertyDTO
 
     const properties = await prisma.property.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: [
+            { priority: 'desc' },
+            { createdAt: 'desc' }
+        ],
     });
+
 
     return properties.map(mapToPropertyDTO);
 }

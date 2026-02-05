@@ -57,6 +57,8 @@ model Property {
   status         String
   images         String
   featured       Boolean            @default(false)
+  priority       Int                @default(0)        // Higher value = higher position
+  urgency        String             @default("NONE")   // NONE | HOT_DEAL | DISTRESS_SALE
   latitude       Float?
   longitude      Float?
   views          Int                @default(0)

@@ -20,6 +20,9 @@ import {
     Bathtub,
     SquareFoot,
     LocationOn,
+    LocalFireDepartment,
+    Star,
+    WorkspacePremium
 } from '@mui/icons-material';
 import Link from 'next/link';
 import type { PropertyDTO } from '@/lib/data/properties';
@@ -60,6 +63,32 @@ export function PropertyCardMUI({
                 },
             }}
         >
+            {property.featured && (
+                <Box
+                    sx={{
+                        position: 'absolute',
+                        top: 0,
+                        right: 0,
+                        width: 0,
+                        height: 0,
+                        borderStyle: 'solid',
+                        borderWidth: '0 50px 50px 0',
+                        borderColor: 'transparent #fdd835 transparent transparent',
+                        zIndex: 2,
+                    }}
+                >
+                    <Star
+                        sx={{
+                            position: 'absolute',
+                            top: 6,
+                            right: -42,
+                            color: 'white',
+                            fontSize: 18,
+                        }}
+                    />
+                </Box>
+            )}
+
             <CardActionArea
                 component={Link}
                 href={property.slug ? `/${property.status === 'sale' ? 'jual' : 'sewa'}/${property.slug}` : `/property/${property.id}`}
@@ -92,6 +121,26 @@ export function PropertyCardMUI({
                             color: 'white',
                         }}
                     />
+
+                    {/* Urgency Badge */}
+                    {property.urgency && property.urgency !== 'NONE' && (
+                        <Chip
+                            icon={<LocalFireDepartment sx={{ '&&': { color: 'white' } }} />}
+                            label={property.urgency === 'HOT_DEAL' ? 'Hot Deal' : 'Butuh Uang'}
+                            size="small"
+                            sx={{
+                                position: 'absolute',
+                                top: 12,
+                                left: property.status ? 80 : 12, // Offset if Status badge exists
+                                fontWeight: 'bold',
+                                backgroundColor: property.urgency === 'HOT_DEAL' ? '#d32f2f' : '#ed6c02', // Red or Orange
+                                color: 'white',
+                                zIndex: 1,
+                            }}
+                        />
+                    )}
+
+
 
                     {/* Wishlist Button */}
                     {showWishlist && (

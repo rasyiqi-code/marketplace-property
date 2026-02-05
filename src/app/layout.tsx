@@ -5,7 +5,7 @@ import { ThemeRegistry } from '@/components/ThemeRegistry';
 import { StackProvider, StackTheme } from "@stackframe/stack";
 import { stackServerApp } from "@/lib/stack";
 import Script from 'next/script';
-import { CheckoutHandler } from '@/components/payment/CheckoutHandler';
+import { CheckoutProvider } from '@/components/providers/CheckoutProvider';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 const outfit = Outfit({ subsets: ['latin'], variable: '--font-heading' });
@@ -32,8 +32,9 @@ export default function RootLayout({
         <StackProvider app={stackServerApp}>
           <StackTheme>
             <ThemeRegistry>
-              {children}
-              <CheckoutHandler />
+              <CheckoutProvider>
+                {children}
+              </CheckoutProvider>
             </ThemeRegistry>
           </StackTheme>
         </StackProvider>

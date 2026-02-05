@@ -5,6 +5,7 @@ import { PropertyDTO } from '@/lib/data/properties';
 import { Trash2, ExternalLink, Star, Edit } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 interface PropertyTableProps {
     properties: PropertyDTO[];
@@ -13,7 +14,8 @@ interface PropertyTableProps {
 export function PropertyTable({ properties: initialProperties }: PropertyTableProps) {
     const [properties, setProperties] = useState(initialProperties);
     const [isDeleting, setIsDeleting] = useState<string | null>(null);
-    const [isToggling, setIsToggling] = useState<string | null>(null);
+    const router = useRouter();
+
 
     const handleDelete = async (id: string) => {
         if (!confirm('Apakah Anda yakin ingin menghapus properti ini?')) return;
@@ -24,6 +26,7 @@ export function PropertyTable({ properties: initialProperties }: PropertyTablePr
             if (!res.ok) throw new Error('Gagal menghapus properti');
 
             setProperties((prev) => prev.filter((p) => p.id !== id));
+            router.refresh();
         } catch (error) {
             console.error('Failed to delete property:', error);
             alert('Gagal menghapus properti.');
@@ -32,22 +35,29 @@ export function PropertyTable({ properties: initialProperties }: PropertyTablePr
         }
     };
 
-    const handleToggleFeatured = async (id: string, currentStatus: boolean) => {
-        setIsToggling(id);
-        try {
-            const res = await fetch(`/api/admin/properties/${id}/feature`, { method: 'PATCH' });
-            if (!res.ok) throw new Error('Gagal mengubah status featured');
+    const handleUpdateStatus = async (id: string, key: 'priority' | 'urgency' | 'featured', value: any) => {
+        // Optimistic update
+        setProperties((prev) => prev.map((p) =>
+            p.id === id ? { ...p, [key]: value } : p
+        ));
 
-            setProperties((prev) => prev.map((p) =>
-                p.id === id ? { ...p, featured: !currentStatus } : p
-            ));
+        try {
+            const res = await fetch(`/api/admin/properties/${id}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ [key]: value })
+            });
+
+            if (!res.ok) throw new Error('Update failed');
+            router.refresh();
         } catch (error) {
-            console.error('Failed to toggle featured:', error);
-            alert('Gagal mengubah status featured.');
-        } finally {
-            setIsToggling(null);
+            console.error('Failed to update status:', error);
+            alert('Gagal mengupdate properti. Perubahan dikembalikan.');
+            // Revert on failure (reload from server to be safe)
+            router.refresh();
         }
     };
+
 
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -58,9 +68,12 @@ export function PropertyTable({ properties: initialProperties }: PropertyTablePr
                             <th className="px-6 py-4">Judul</th>
                             <th className="px-6 py-4">Lokasi</th>
                             <th className="px-6 py-4">Harga</th>
-                            <th className="px-6 py-4">Featured</th>
+                            <th className="px-6 py-4 text-center">Urgency</th>
+                            <th className="px-6 py-4 text-center">Priority</th>
+                            <th className="px-6 py-4 text-center">Featured</th>
                             <th className="px-6 py-4">Tipe</th>
                             <th className="px-6 py-4">Aksi</th>
+
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
@@ -84,9 +97,27 @@ export function PropertyTable({ properties: initialProperties }: PropertyTablePr
                                 <td className="px-6 py-4 text-gray-600">{property.location}</td>
                                 <td className="px-6 py-4 font-medium text-primary">{property.price}</td>
                                 <td className="px-6 py-4">
+                                    <select
+                                        value={property.urgency || 'NONE'}
+                                        onChange={(e) => handleUpdateStatus(property.id, 'urgency', e.target.value)}
+                                        className="text-xs border-gray-300 rounded-md shadow-sm focus:border-primary focus:ring focus:ring-primary/20"
+                                    >
+                                        <option value="NONE">None</option>
+                                        <option value="HOT_DEAL">Hot Deal</option>
+                                        <option value="DISTRESS_SALE">BU</option>
+                                    </select>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <input
+                                        type="number"
+                                        value={property.priority || 0}
+                                        onChange={(e) => handleUpdateStatus(property.id, 'priority', parseInt(e.target.value))}
+                                        className="w-16 text-xs border-gray-300 rounded-md shadow-sm focus:border-primary focus:ring focus:ring-primary/20 text-center"
+                                    />
+                                </td>
+                                <td className="px-6 py-4 text-center">
                                     <button
-                                        onClick={() => handleToggleFeatured(property.id, property.featured)}
-                                        disabled={isToggling === property.id}
+                                        onClick={() => handleUpdateStatus(property.id, 'featured', !property.featured)}
                                         className={`transition-colors p-1 rounded-full hover:bg-gray-100 ${property.featured ? 'text-yellow-400' : 'text-gray-300'
                                             }`}
                                         title={property.featured ? 'Hapus dari Featured' : 'Jadikan Featured'}
@@ -94,6 +125,7 @@ export function PropertyTable({ properties: initialProperties }: PropertyTablePr
                                         <Star className={`w-5 h-5 ${property.featured ? 'fill-current' : ''}`} />
                                     </button>
                                 </td>
+
                                 <td className="px-6 py-4">
                                     <span
                                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${property.status === 'sale'
