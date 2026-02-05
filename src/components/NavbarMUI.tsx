@@ -23,17 +23,19 @@ import { NavbarUser } from './navbar/types';
 import { NAV_LINKS } from './navbar/constants';
 import { UserMenu } from './navbar/UserMenu';
 import { MobileMenu } from './navbar/MobileMenu';
+import { UserStatus } from './navbar/types';
 
 export type { NavbarUser };
 
 interface NavbarMUIProps {
     user: NavbarUser | null;
+    userStatus?: UserStatus | null;
 }
 
 /**
  * NavbarMUI - Navbar utama menggunakan Material UI + Stack Auth
  */
-export function NavbarMUI({ user }: NavbarMUIProps) {
+export function NavbarMUI({ user, userStatus }: NavbarMUIProps) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const [drawerOpen, setDrawerOpen] = React.useState(false);
@@ -96,7 +98,7 @@ export function NavbarMUI({ user }: NavbarMUIProps) {
                                 </Button>
 
                                 {user ? (
-                                    <UserMenu user={user} />
+                                    <UserMenu user={user} userStatus={userStatus} />
                                 ) : (
                                     <Button
                                         component={Link}
@@ -170,6 +172,7 @@ export function NavbarMUI({ user }: NavbarMUIProps) {
                 open={drawerOpen}
                 onClose={() => setDrawerOpen(false)}
                 user={user}
+                userStatus={userStatus}
             />
         </>
     );

@@ -9,6 +9,7 @@ import {
     ListItem,
     ListItemButton,
     ListItemText,
+    Button,
 } from '@mui/material';
 import {
     AddCircleOutline,
@@ -18,16 +19,17 @@ import {
     House,
 } from '@mui/icons-material';
 import Link from 'next/link';
-import { NavbarUser } from './types';
+import { NavbarUser, UserStatus } from './types';
 import { NAV_LINKS } from './constants';
 
 interface MobileMenuProps {
     open: boolean;
     onClose: () => void;
     user: NavbarUser | null;
+    userStatus?: UserStatus | null;
 }
 
-export function MobileMenu({ open, onClose, user }: MobileMenuProps) {
+export function MobileMenu({ open, onClose, user, userStatus }: MobileMenuProps) {
     return (
         <Drawer
             anchor="right"
@@ -62,6 +64,38 @@ export function MobileMenu({ open, onClose, user }: MobileMenuProps) {
                             <ListItemText primary="Pasang Iklan" />
                         </ListItemButton>
                     </ListItem>
+                    {userStatus && (
+                        <Box sx={{ px: 2, py: 2, bgcolor: 'grey.50', mx: 2, my: 1, borderRadius: 2, border: '1px solid', borderColor: 'grey.200' }}>
+                            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold', display: 'block', mb: 1 }}>
+                                KUOTA LISTING
+                            </Typography>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                                <Typography variant="body2" fontWeight="bold">
+                                    {userStatus.propertyCount} / {userStatus.listingLimit} Terpakai
+                                </Typography>
+                            </Box>
+                            <Box sx={{ width: '100%', height: 8, bgcolor: 'grey.200', borderRadius: 4, overflow: 'hidden', mb: 1.5 }}>
+                                <Box
+                                    sx={{
+                                        width: `${Math.min((userStatus.propertyCount / userStatus.listingLimit) * 100, 100)}%`,
+                                        height: '100%',
+                                        bgcolor: userStatus.propertyCount >= userStatus.listingLimit ? 'error.main' : 'primary.main',
+                                    }}
+                                />
+                            </Box>
+                            <Button
+                                component={Link}
+                                href="/pricing"
+                                fullWidth
+                                variant="outlined"
+                                size="small"
+                                onClick={onClose}
+                                sx={{ fontSize: '0.75rem' }}
+                            >
+                                {userStatus.propertyCount >= userStatus.listingLimit ? 'Upgrade Paket' : 'Tambah Kuota'}
+                            </Button>
+                        </Box>
+                    )}
                     {user ? (
                         <>
                             <ListItem disablePadding>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { PropertyInput } from '@/lib/data/properties';
 import { CheckCircle2 } from 'lucide-react';
@@ -83,9 +83,9 @@ export function PostAdWizard({ initialData, isEditMode = false, propertyId }: Po
         }
     }, [formData, currentStep, isEditMode]);
 
-    const updateFormData = (updates: Partial<PropertyInput>) => {
+    const updateFormData = useCallback((updates: Partial<PropertyInput>) => {
         setFormData((prev) => ({ ...prev, ...updates }));
-    };
+    }, []);
 
     const handleNext = () => {
         if (currentStep === 0) {

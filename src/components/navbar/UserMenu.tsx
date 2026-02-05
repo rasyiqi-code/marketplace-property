@@ -8,6 +8,8 @@ import {
     MenuItem,
     ListItemIcon,
     Divider,
+    Box,
+    Typography,
 } from '@mui/material';
 import {
     Person,
@@ -16,13 +18,14 @@ import {
     House,
 } from '@mui/icons-material';
 import Link from 'next/link';
-import { NavbarUser } from './types';
+import { NavbarUser, UserStatus } from './types';
 
 interface UserMenuProps {
     user: NavbarUser;
+    userStatus?: UserStatus | null;
 }
 
-export function UserMenu({ user }: UserMenuProps) {
+export function UserMenu({ user, userStatus }: UserMenuProps) {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const displayName = user.displayName || user.primaryEmail?.split('@')[0] || 'User';
 
@@ -91,6 +94,45 @@ export function UserMenu({ user }: UserMenuProps) {
                 transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                 anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
             >
+                {userStatus && (
+                    <Box sx={{ px: 2, py: 1.5, minWidth: 200 }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold', display: 'block', mb: 0.5 }}>
+                            KUOTA LISTING
+                        </Typography>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                            <Typography variant="body2" fontWeight="bold">
+                                {userStatus.propertyCount} / {userStatus.listingLimit}
+                            </Typography>
+                            <Typography variant="caption" color={userStatus.propertyCount >= userStatus.listingLimit ? 'error.main' : 'primary.main'} fontWeight="bold">
+                                {userStatus.propertyCount >= userStatus.listingLimit ? 'Penuh' : 'Tersedia'}
+                            </Typography>
+                        </Box>
+                        <Box sx={{ width: '100%', height: 6, bgcolor: 'grey.100', borderRadius: 3, overflow: 'hidden' }}>
+                            <Box
+                                sx={{
+                                    width: `${Math.min((userStatus.propertyCount / userStatus.listingLimit) * 100, 100)}%`,
+                                    height: '100%',
+                                    bgcolor: userStatus.propertyCount >= userStatus.listingLimit ? 'error.main' : 'primary.main',
+                                    transition: 'width 0.5s ease-out'
+                                }}
+                            />
+                        </Box>
+                        {userStatus.propertyCount >= userStatus.listingLimit && (
+                            <Button
+                                component={Link}
+                                href="/pricing"
+                                fullWidth
+                                variant="contained"
+                                size="small"
+                                sx={{ mt: 1.5, fontSize: '0.7rem', py: 0.5 }}
+                                onClick={handleClose}
+                            >
+                                Upgrade Sekarang
+                            </Button>
+                        )}
+                    </Box>
+                )}
+                {userStatus && <Divider />}
                 <MenuItem component={Link} href="/account-settings" onClick={handleClose}>
                     <Person fontSize="small" sx={{ mr: 1.5 }} /> Profil Saya
                 </MenuItem>

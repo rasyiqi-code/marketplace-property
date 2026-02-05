@@ -38,29 +38,36 @@ export default function MapPicker({ lat, lng, mapsEmbed, onChange }: MapPickerPr
         };
     }, []);
 
-    // Effect untuk sinkronisasi koordinat ke parent saat inputValue/previewSrc berubah
+    // Effect untuk inisialisasi awal koordinat jika mapsEmbed sudah ada tapi lat/lng masih kosong (misal saat restore dari localStorage)
     useEffect(() => {
-        // Lewati sinkronisasi jika ini adalah render pertama dan sudah di-initialize via prop di state
         if (!hasInitialized.current) {
             hasInitialized.current = true;
-            // Jika ada mapsEmbed awal, kita tetap perlu hitung koordinatnya sekalipun props lat/lng mungkin sudah ada
-            // Tapi kita tidak panggil setState di sini, kita panggil onChange (parent update)
-        }
 
-        const { extractedLat, extractedLng } = extractCoords(previewSrc);
-
-        if (extractedLat !== null && extractedLng !== null) {
-            onChange(extractedLat, extractedLng, inputValue);
-        } else if (inputValue === '') {
-            onChange(0, 0, '');
-        } else {
-            // Jika tidak ada koordinat (misal link pendek), gunakan lat/lng lama atau default
-            onChange(lat || 0, lng || 0, inputValue);
+            // Hanya jalankan auto-sync jika kita punya embed tapi tidak punya koordinat
+            if (previewSrc && (!lat || !lng)) {
+                const { extractedLat, extractedLng } = extractCoords(previewSrc);
+                if (extractedLat !== null && extractedLng !== null) {
+                    onChange(extractedLat, extractedLng, inputValue);
+                }
+            }
         }
-    }, [inputValue, previewSrc, lat, lng, onChange, extractCoords]);
+    }, []); // Run ONLY once on mount
 
     const handleInputChange = (val: string) => {
         setInputValue(val);
+
+        // Langsung hitung dan beritahu parent saat input berubah
+        const nextPreviewSrc = getPreviewSrc(val);
+        const { extractedLat, extractedLng } = extractCoords(nextPreviewSrc);
+
+        if (extractedLat !== null && extractedLng !== null) {
+            onChange(extractedLat, extractedLng, val);
+        } else if (val === '') {
+            onChange(0, 0, '');
+        } else {
+            // Jika ada teks tapi tidak ada koordinat (misal link pendek), tetap kirim teksnya ke parent
+            onChange(lat || 0, lng || 0, val);
+        }
     };
 
     return (

@@ -60,3 +60,39 @@ export async function getUsers(): Promise<UserDTO[]> {
         return users as UserDTO[];
     }
 }
+
+export interface UserStatus {
+    listingLimit: number;
+    propertyCount: number;
+    accountType: 'INDIVIDUAL' | 'AGENT' | 'AGENCY';
+    isPremium: boolean;
+}
+
+export async function getCurrentUserStatus(userId: string): Promise<UserStatus> {
+    const dbUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+            listingLimit: true,
+            accountType: true,
+            _count: {
+                select: { properties: true }
+            }
+        }
+    });
+
+    if (!dbUser) {
+        return {
+            listingLimit: 1,
+            propertyCount: 0,
+            accountType: 'INDIVIDUAL',
+            isPremium: false
+        };
+    }
+
+    return {
+        listingLimit: dbUser.listingLimit,
+        propertyCount: dbUser._count.properties,
+        accountType: dbUser.accountType as 'INDIVIDUAL' | 'AGENT' | 'AGENCY',
+        isPremium: dbUser.accountType !== 'INDIVIDUAL' || dbUser.listingLimit > 1
+    };
+}
