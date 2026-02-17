@@ -2,9 +2,11 @@
 import { prisma } from '@/lib/db';
 import { notFound, redirect } from 'next/navigation';
 
-export default async function PropertyIdPage({ params }: { params: { id: string } }) {
+export default async function PropertyIdPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+
     const property = await prisma.property.findUnique({
-        where: { id: params.id },
+        where: { id },
         select: { status: true, slug: true }
     });
 
@@ -19,7 +21,7 @@ export default async function PropertyIdPage({ params }: { params: { id: string 
     // Use slug if available, otherwise use ID (if [slug] page supports it) - assuming for now it does or we just redirect
     // If [slug] page requires slug, and slug is null, we might be stuck unless [slug] page logic handles ID.
     // Let's assume we can redirect to /jual/ID if slug is null.
-    const identifier = property.slug || params.id;
+    const identifier = property.slug || id;
 
     redirect(`/${base}/${identifier}`);
 }
