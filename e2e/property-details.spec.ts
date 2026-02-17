@@ -27,10 +27,10 @@ test.describe('Property Details', () => {
             await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
             // "Hubungi" or "Contact" button (usually a link)
-            // const contactButton = page.getByRole('link', { name: /Hubungi|WhatsApp/i }).first();
-            // if (await contactButton.isVisible()) {
-            //    await expect(contactButton).toBeVisible();
-            // }
+            const contactButton = page.getByRole('link', { name: /Hubungi|WhatsApp/i }).first();
+            if (await contactButton.isVisible()) {
+                await expect(contactButton).toBeVisible();
+            }
         } else {
             test.skip(true, 'No properties found on homepage to click');
         }
