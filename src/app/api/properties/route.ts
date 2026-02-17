@@ -87,7 +87,18 @@ export async function POST(request: Request) {
             },
         });
 
-        // 3. Validasi Kuota Listing
+        // 3. Validasi Masa Aktif Paket (Subscription Expiry)
+        if (dbUser.packageExpiry && new Date() > new Date(dbUser.packageExpiry)) {
+            return NextResponse.json(
+                {
+                    error: 'Masa Aktif Paket Berakhir',
+                    message: `Paket berlangganan Anda telah berakhir. Silakan perbarui paket Anda untuk memposting properti baru.`
+                },
+                { status: 403 }
+            );
+        }
+
+        // 4. Validasi Kuota Listing
         const propertyCount = await prisma.property.count({
             where: { userId: userId }
         });

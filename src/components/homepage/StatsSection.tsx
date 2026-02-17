@@ -4,14 +4,23 @@ import * as React from 'react';
 import { Box, Container, Grid, Typography, Paper } from '@mui/material';
 import { Home, People, CheckCircle, TrendingUp } from '@mui/icons-material';
 
-const STATS = [
-    { label: 'Listing Aktif', value: '1,200+', icon: <Home sx={{ fontSize: 40 }} />, color: '#034E96' },
-    { label: 'Pengguna Terdaftar', value: '5,000+', icon: <People sx={{ fontSize: 40 }} />, color: '#FED700' },
-    { label: 'Transaksi Sukses', value: '850+', icon: <CheckCircle sx={{ fontSize: 40 }} />, color: '#4CAF50' },
-    { label: 'Kenaikan Investasi', value: '12%', icon: <TrendingUp sx={{ fontSize: 40 }} />, color: '#F44336' },
-];
+interface StatsSectionProps {
+    stats: {
+        activeListings: number;
+        registeredUsers: number;
+        successfulTransactions: number;
+        totalViews: number;
+    };
+}
 
-export function StatsSection() {
+export function StatsSection({ stats }: StatsSectionProps) {
+    const STATS = [
+        { label: 'Listing Aktif', value: `${stats.activeListings}+`, icon: <Home sx={{ fontSize: 40 }} />, color: '#034E96' },
+        { label: 'Pengguna Terdaftar', value: `${stats.registeredUsers}+`, icon: <People sx={{ fontSize: 40 }} />, color: '#FED700' },
+        { label: 'Transaksi Sukses', value: `${stats.successfulTransactions}+`, icon: <CheckCircle sx={{ fontSize: 40 }} />, color: '#4CAF50' },
+        { label: 'Total Views', value: `${stats.totalViews.toLocaleString()}`, icon: <TrendingUp sx={{ fontSize: 40 }} />, color: '#F44336' },
+    ];
+
     return (
         <Box sx={{ py: 8, backgroundColor: '#f8f9fa' }}>
             <Container maxWidth="lg">

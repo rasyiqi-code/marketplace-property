@@ -5,12 +5,14 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 
-import { PropertyDetailTabs } from '@/components/PropertyDetailTabs';
 import { stackServerApp } from '@/lib/stack';
 
 export default async function PropertyDetailPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
+    console.log('--- DEBUG JUAL PAGE ---');
+    console.log('Slug:', slug);
     const property = await getPropertyBySlug(slug, 'sale');
+    console.log('Property result:', property ? property.id : 'NULL');
     await stackServerApp.getUser();
 
     if (!property) {
@@ -82,7 +84,11 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Left Content */}
                     <div className="lg:col-span-8">
-                        <PropertyDetailTabs property={property} />
+                        {/* <PropertyDetailTabs property={property} /> */}
+                        <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-100">
+                            <h1 className="text-2xl font-bold">{property.title}</h1>
+                            <p>Debug rendering without tabs</p>
+                        </div>
                     </div>
 
                     {/* Right Sidebar (Sticky) */}

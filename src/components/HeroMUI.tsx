@@ -21,8 +21,8 @@ import {
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
-// Gambar hero - bisa diganti dengan gambar properti asli
-const HERO_IMAGES = [
+// Default images if no dynamic images are provided
+const DEFAULT_HERO_IMAGES = [
     '/images/hero-1.jpg',
     '/images/hero-2.jpg',
     '/images/hero-3.jpg',
@@ -30,12 +30,18 @@ const HERO_IMAGES = [
 
 type PropertyStatus = 'sale' | 'rent' | 'new';
 
+interface HeroMUIProps {
+    heroImages?: string[];
+}
+
 /**
  * HeroMUI - Hero section dengan MUI components
  * Features: Image slider, search bar, tab filter (Dijual/Disewa/Baru)
  */
-export function HeroMUI() {
+export function HeroMUI({ heroImages = [] }: HeroMUIProps) {
     const router = useRouter();
+    const imagesToDisplay = heroImages.length > 0 ? heroImages : DEFAULT_HERO_IMAGES;
+
     const [currentSlide, setCurrentSlide] = React.useState(0);
     const [searchQuery, setSearchQuery] = React.useState('');
     const [propertyStatus, setPropertyStatus] = React.useState<PropertyStatus>('sale');
@@ -43,10 +49,10 @@ export function HeroMUI() {
     // Auto-play slider
     React.useEffect(() => {
         const timer = setInterval(() => {
-            setCurrentSlide((prev) => (prev + 1) % HERO_IMAGES.length);
+            setCurrentSlide((prev) => (prev + 1) % imagesToDisplay.length);
         }, 5000);
         return () => clearInterval(timer);
-    }, []);
+    }, [imagesToDisplay.length]);
 
     const handleSearch = () => {
         const params = new URLSearchParams();
@@ -70,8 +76,8 @@ export function HeroMUI() {
         if (newStatus) setPropertyStatus(newStatus);
     };
 
-    const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % HERO_IMAGES.length);
-    const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + HERO_IMAGES.length) % HERO_IMAGES.length);
+    const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % imagesToDisplay.length);
+    const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + imagesToDisplay.length) % imagesToDisplay.length);
 
     return (
         <Box
@@ -84,13 +90,14 @@ export function HeroMUI() {
                 justifyContent: 'center',
                 pb: { xs: 4, md: 6 },
                 overflow: 'hidden',
+                backgroundColor: 'grey.900', // Fallback background
             }}
         >
             {/* Background Slider */}
             <Box sx={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-                {HERO_IMAGES.map((img, index) => (
+                {imagesToDisplay.map((img, index) => (
                     <Box
-                        key={img}
+                        key={`${img}-${index}`}
                         sx={{
                             position: 'absolute',
                             inset: 0,
@@ -169,7 +176,7 @@ export function HeroMUI() {
                     gap: 1,
                 }}
             >
-                {HERO_IMAGES.map((_, index) => (
+                {imagesToDisplay.map((_, index) => (
                     <Box
                         key={index}
                         onClick={() => setCurrentSlide(index)}

@@ -249,6 +249,57 @@ async function main() {
         console.log('✓ Properties already exist:', existingProperties);
     }
 
+    // =========================================================================
+    // TESTIMONIALS
+    // =========================================================================
+    const existingTestimonials = await prisma.testimonial.count();
+
+    if (existingTestimonials === 0) {
+        const testimonialsData = [
+            {
+                name: 'Budi Santoso',
+                role: 'Pembeli Rumah',
+                avatar: 'https://i.pravatar.cc/150?u=budi',
+                quote: 'ProEstate membantu saya menemukan rumah impian hanya dalam waktu 2 minggu. Proses transaksinya sangat transparan dan mudah.',
+                rating: 5,
+                show: true,
+            },
+            {
+                name: 'Siti Aminah',
+                role: 'Investor Properti',
+                avatar: 'https://i.pravatar.cc/150?u=siti',
+                quote: 'Fitur pencarian berbasis peta sangat memudahkan saya memantau lokasi strategis. Platform yang sangat profesional!',
+                rating: 5,
+                show: true,
+            },
+            {
+                name: 'Andi Wijaya',
+                role: 'Penjual',
+                avatar: 'https://i.pravatar.cc/150?u=andi',
+                quote: 'Iklan saya langsung mendapatkan banyak inquiry berkualitas. Dashboard-nya sangat membantu mengelola calon pembeli.',
+                rating: 4, // Integer 4 for 4.5 representation if needed, but schema is Int. Let's use 5 or 4.
+                show: true,
+            },
+            {
+                name: 'Diana Putri',
+                role: 'Penyewa Apartemen',
+                avatar: 'https://i.pravatar.cc/150?u=diana',
+                quote: 'Sangat mudah mencari apartemen sewa bulanan di sini. Pilihannya banyak dan foto-fotonya sesuai aslinya.',
+                rating: 5,
+                show: true,
+            }
+        ];
+
+        for (const testimonial of testimonialsData) {
+            await prisma.testimonial.create({
+                data: testimonial,
+            });
+        }
+        console.log('✓ Testimonials created:', testimonialsData.length);
+    } else {
+        console.log('✓ Testimonials already exist:', existingTestimonials);
+    }
+
     console.log('\n🌱 Seed completed successfully!');
 }
 

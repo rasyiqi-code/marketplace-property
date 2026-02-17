@@ -6,7 +6,7 @@ export function formatPrice(price: number, status: string): string {
     });
 
     const formatted = formatter.format(price);
-    return status === 'rent' ? `${formatted} / thn` : formatted;
+    return status.toLowerCase() === 'rent' ? `${formatted} / thn` : formatted;
 }
 
 export function generateSlug(title: string): string {

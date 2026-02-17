@@ -2,22 +2,44 @@
 
 import * as React from 'react';
 import { Box, Container, Typography, Grid, Paper, ButtonBase } from '@mui/material';
-import { Home, Domain, Business, Landscape } from '@mui/icons-material';
+import { Home, Domain, Business, Landscape, Apartment, Store } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
 
-const CATEGORIES = [
-    { name: 'Rumah', icon: <Home fontSize="large" />, count: '450+', color: '#034E96' },
-    { name: 'Apartemen', icon: <Domain fontSize="large" />, count: '320+', color: '#FED700' },
-    { name: 'Ruko', icon: <Business fontSize="large" />, count: '180+', color: '#4CAF50' },
-    { name: 'Tanah', icon: <Landscape fontSize="large" />, count: '250+', color: '#FF9800' },
-];
+interface CategoryCount {
+    name: string;
+    count: number;
+}
 
-export function CategorySection() {
+interface CategorySectionProps {
+    categories: CategoryCount[];
+}
+
+const getCategoryIcon = (name: string) => {
+    const lower = name.toLowerCase();
+    if (lower.includes('rumah')) return <Home fontSize="large" />;
+    if (lower.includes('apartemen')) return <Apartment fontSize="large" />;
+    if (lower.includes('ruko')) return <Store fontSize="large" />;
+    if (lower.includes('kantor')) return <Business fontSize="large" />;
+    if (lower.includes('tanah')) return <Landscape fontSize="large" />;
+    return <Domain fontSize="large" />; // Default
+};
+
+const getCategoryColor = (index: number) => {
+    const colors = ['#034E96', '#FED700', '#4CAF50', '#FF9800', '#9C27B0', '#F44336'];
+    return colors[index % colors.length];
+};
+
+export function CategorySection({ categories }: CategorySectionProps) {
     const router = useRouter();
 
     const handleCategoryClick = (name: string) => {
         router.push(`/search?type=${encodeURIComponent(name)}`);
     };
+
+    // If no categories, show nothing or a default empty state
+    if (!categories || categories.length === 0) {
+        return null;
+    }
 
     return (
         <Box sx={{ py: 8 }}>
@@ -32,65 +54,68 @@ export function CategorySection() {
                 </Box>
 
                 <Grid container spacing={3}>
-                    {CATEGORIES.map((cat, index) => (
-                        <Grid size={{ xs: 6, md: 3 }} key={index}>
-                            <ButtonBase
-                                onClick={() => handleCategoryClick(cat.name)}
-                                sx={{
-                                    width: '100%',
-                                    textAlign: 'left',
-                                    borderRadius: 4,
-                                    overflow: 'hidden',
-                                    display: 'block',
-                                }}
-                            >
-                                <Paper
-                                    elevation={0}
+                    {categories.map((cat, index) => {
+                        const color = getCategoryColor(index);
+                        return (
+                            <Grid size={{ xs: 6, md: 3 }} key={index}>
+                                <ButtonBase
+                                    onClick={() => handleCategoryClick(cat.name)}
                                     sx={{
-                                        p: 3,
-                                        height: '100%',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        alignItems: 'center',
-                                        border: '1px solid',
-                                        borderColor: 'grey.200',
+                                        width: '100%',
+                                        textAlign: 'left',
                                         borderRadius: 4,
-                                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                        '&:hover': {
-                                            borderColor: cat.color,
-                                            boxShadow: `0 8px 16px ${cat.color}15`,
-                                            '& .icon-box': {
-                                                backgroundColor: cat.color,
-                                                color: 'white',
-                                                transform: 'scale(1.1)',
-                                            },
-                                        },
+                                        overflow: 'hidden',
+                                        display: 'block',
                                     }}
                                 >
-                                    <Box
-                                        className="icon-box"
+                                    <Paper
+                                        elevation={0}
                                         sx={{
-                                            mb: 2,
-                                            p: 2,
-                                            borderRadius: 3,
-                                            backgroundColor: 'grey.50',
-                                            color: 'grey.700',
+                                            p: 3,
+                                            height: '100%',
                                             display: 'flex',
-                                            transition: 'all 0.3s ease',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            border: '1px solid',
+                                            borderColor: 'grey.200',
+                                            borderRadius: 4,
+                                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                            '&:hover': {
+                                                borderColor: color,
+                                                boxShadow: `0 8px 16px ${color}15`,
+                                                '& .icon-box': {
+                                                    backgroundColor: color,
+                                                    color: 'white',
+                                                    transform: 'scale(1.1)',
+                                                },
+                                            },
                                         }}
                                     >
-                                        {cat.icon}
-                                    </Box>
-                                    <Typography variant="h6" sx={{ fontWeight: 700, color: 'grey.900' }}>
-                                        {cat.name}
-                                    </Typography>
-                                    <Typography variant="body2" sx={{ color: 'grey.500', mt: 0.5 }}>
-                                        {cat.count} Properti
-                                    </Typography>
-                                </Paper>
-                            </ButtonBase>
-                        </Grid>
-                    ))}
+                                        <Box
+                                            className="icon-box"
+                                            sx={{
+                                                mb: 2,
+                                                p: 2,
+                                                borderRadius: 3,
+                                                backgroundColor: 'grey.50',
+                                                color: 'grey.700',
+                                                display: 'flex',
+                                                transition: 'all 0.3s ease',
+                                            }}
+                                        >
+                                            {getCategoryIcon(cat.name)}
+                                        </Box>
+                                        <Typography variant="h6" sx={{ fontWeight: 700, color: 'grey.900' }}>
+                                            {cat.name}
+                                        </Typography>
+                                        <Typography variant="body2" sx={{ color: 'grey.500', mt: 0.5 }}>
+                                            {cat.count} Properti
+                                        </Typography>
+                                    </Paper>
+                                </ButtonBase>
+                            </Grid>
+                        );
+                    })}
                 </Grid>
             </Container>
         </Box>

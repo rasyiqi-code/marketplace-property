@@ -156,7 +156,10 @@ export async function getPropertyById(id: string): Promise<PropertyDetailDTO | n
 export async function getPropertyBySlug(slug: string, status: string): Promise<PropertyDetailDTO | null> {
     // Try to find by slug first
     let property = await prisma.property.findFirst({
-        where: { slug, status },
+        where: {
+            slug,
+            status: { equals: status, mode: 'insensitive' }
+        },
         include: {
             user: {
                 select: {
@@ -179,7 +182,10 @@ export async function getPropertyBySlug(slug: string, status: string): Promise<P
     // Fallback: try to find by ID if slug search fails (handling old IDs or stale data)
     if (!property) {
         property = await prisma.property.findFirst({
-            where: { id: slug, status },
+            where: {
+                id: slug,
+                status: { equals: status, mode: 'insensitive' }
+            },
             include: {
                 user: {
                     select: {

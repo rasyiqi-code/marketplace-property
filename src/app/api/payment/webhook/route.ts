@@ -35,6 +35,11 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Internal server error" }, { status: 500 });
         }
 
+        // Idempotency Check: prevent double processing
+        if (order.status === 'PAID') {
+            return NextResponse.json({ status: 'OK', message: 'Order already paid' });
+        }
+
         // 3. Update Order Status & User Quota
         let newStatus = 'PENDING';
 
@@ -75,7 +80,11 @@ export async function POST(request: Request) {
                 if (order.package.type === 'SUBSCRIPTION') {
                     const days = order.package.durationDays;
                     const now = new Date();
-                    expiryDate = new Date(now.setDate(now.getDate() + days));
+
+                    // Smart Extension: If current expiry is in future, add days to IT.
+                    // If null or past, add days to NOW.
+                    const basisDate = (user.packageExpiry && user.packageExpiry > now) ? user.packageExpiry : now;
+                    expiryDate = new Date(basisDate.getTime() + (days * 24 * 60 * 60 * 1000));
                 }
 
                 await prisma.user.update({

@@ -3,43 +3,30 @@
 import * as React from 'react';
 import { Box, Container, Typography, Avatar, Rating, Paper, IconButton } from '@mui/material';
 import { ChevronLeft, ChevronRight, FormatQuote } from '@mui/icons-material';
+import { Testimonial } from '@prisma/client';
 
-const TESTIMONIALS = [
-    {
-        name: 'Budi Santoso',
-        role: 'Pembeli Rumah',
-        avatar: 'https://i.pravatar.cc/150?u=budi',
-        quote: 'ProEstate membantu saya menemukan rumah impian hanya dalam waktu 2 minggu. Proses transaksinya sangat transparan dan mudah.',
-        rating: 5,
-    },
-    {
-        name: 'Siti Aminah',
-        role: 'Investor Properti',
-        avatar: 'https://i.pravatar.cc/150?u=siti',
-        quote: 'Fitur pencarian berbasis peta sangat memudahkan saya memantau lokasi strategis. Platform yang sangat profesional!',
-        rating: 5,
-    },
-    {
-        name: 'Andi Wijaya',
-        role: 'Penjual',
-        avatar: 'https://i.pravatar.cc/150?u=andi',
-        quote: 'Iklan saya langsung mendapatkan banyak inquiry berkualitas. Dashboard-nya sangat membantu mengelola calon pembeli.',
-        rating: 4.5,
-    },
-];
+interface TestimonialSectionProps {
+    testimonials: Testimonial[];
+}
 
-export function TestimonialSection() {
+export function TestimonialSection({ testimonials }: TestimonialSectionProps) {
     const [activeStep, setActiveStep] = React.useState(0);
 
     const handleNext = () => {
-        setActiveStep((prev) => (prev + 1) % TESTIMONIALS.length);
+        if (!testimonials.length) return;
+        setActiveStep((prev) => (prev + 1) % testimonials.length);
     };
 
     const handleBack = () => {
-        setActiveStep((prev) => (prev - 1 + TESTIMONIALS.length) % TESTIMONIALS.length);
+        if (!testimonials.length) return;
+        setActiveStep((prev) => (prev - 1 + testimonials.length) % testimonials.length);
     };
 
-    const testimonial = TESTIMONIALS[activeStep];
+    if (!testimonials || testimonials.length === 0) {
+        return null;
+    }
+
+    const testimonial = testimonials[activeStep];
 
     return (
         <Box sx={{ py: 10, backgroundColor: '#fdfdfd', position: 'relative', overflow: 'hidden' }}>
@@ -93,9 +80,11 @@ export function TestimonialSection() {
 
                         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                             <Avatar
-                                src={testimonial.avatar}
+                                src={testimonial.avatar || undefined}
                                 sx={{ width: 80, height: 80, mb: 2, border: '4px solid white', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}
-                            />
+                            >
+                                {testimonial.name[0]}
+                            </Avatar>
                             <Typography variant="h6" sx={{ fontWeight: 700, color: 'grey.900' }}>
                                 {testimonial.name}
                             </Typography>

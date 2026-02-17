@@ -1,17 +1,25 @@
-import { getPropertyById } from '@/lib/data/properties';
+
+import { prisma } from '@/lib/db';
 import { notFound, redirect } from 'next/navigation';
 
-export default async function PropertyDetailPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = await params;
-    const property = await getPropertyById(id);
+export default async function PropertyIdPage({ params }: { params: { id: string } }) {
+    const property = await prisma.property.findUnique({
+        where: { id: params.id },
+        select: { status: true, slug: true }
+    });
 
     if (!property) {
         notFound();
     }
 
-    // Redirect to the new SEO-friendly URL
-    const statusPath = property.status === 'sale' ? 'jual' : 'sewa';
-    const slug = property.slug || id; // Fallback to ID if slug is missing for some reason
+    // Redirect to the correct canonical URL
+    // status is likely 'sale' or 'rent' (lowercase), but let's be safe
+    const isSale = property.status.toLowerCase() === 'sale';
+    const base = isSale ? 'jual' : 'sewa';
+    // Use slug if available, otherwise use ID (if [slug] page supports it) - assuming for now it does or we just redirect
+    // If [slug] page requires slug, and slug is null, we might be stuck unless [slug] page logic handles ID.
+    // Let's assume we can redirect to /jual/ID if slug is null.
+    const identifier = property.slug || params.id;
 
-    redirect(`/${statusPath}/${slug}`);
+    redirect(`/${base}/${identifier}`);
 }
