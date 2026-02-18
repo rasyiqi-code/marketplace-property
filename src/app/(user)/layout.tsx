@@ -4,6 +4,7 @@ import { FooterMUI } from '@/components/FooterMUI';
 import { UserSidebar } from '@/components/UserSidebar';
 import { Box, Container, Grid } from '@mui/material';
 import { getCurrentUserStatus } from '@/lib/data/users';
+import prisma from '@/lib/prisma';
 
 export default async function UserLayout({
     children,
@@ -16,6 +17,11 @@ export default async function UserLayout({
 
     // Ambil status kuota dari DB jika user login
     const userStatus = userId ? await getCurrentUserStatus(userId) : null;
+
+    // Ambil pengaturan footer dari database
+    const footerSettings = await prisma.siteSetting.findUnique({
+        where: { key: 'footer_settings' }
+    });
 
     // Serialize user object
     const safeUser: NavbarUser | null = user ? {
@@ -43,7 +49,7 @@ export default async function UserLayout({
                 </Grid>
             </Container>
 
-            <FooterMUI />
+            <FooterMUI settings={footerSettings?.value as any} />
         </Box>
     );
 }

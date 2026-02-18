@@ -7,13 +7,13 @@ import { useRouter } from 'next/navigation';
 import { PackageForm } from './PackageForm';
 
 interface PackageTableProps {
-    packages: ListingPackage[];
+    packages: (Omit<ListingPackage, 'price'> & { price: number })[];
 }
 
 export function PackageTable({ packages }: PackageTableProps) {
     const router = useRouter();
     const [isFormOpen, setIsFormOpen] = useState(false);
-    const [editingPackage, setEditingPackage] = useState<ListingPackage | undefined>(undefined);
+    const [editingPackage, setEditingPackage] = useState<(Omit<ListingPackage, 'price'> & { price: number }) | undefined>(undefined);
     const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
     const handleCreate = () => {
@@ -21,7 +21,7 @@ export function PackageTable({ packages }: PackageTableProps) {
         setIsFormOpen(true);
     };
 
-    const handleEdit = (pkg: ListingPackage) => {
+    const handleEdit = (pkg: (Omit<ListingPackage, 'price'> & { price: number })) => {
         setEditingPackage(pkg);
         setIsFormOpen(true);
     };
@@ -96,8 +96,8 @@ export function PackageTable({ packages }: PackageTableProps) {
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className={`text-xs px-2 py-1 rounded-full font-medium ${pkg.type === 'SUBSCRIPTION'
-                                                ? 'bg-purple-50 text-purple-700'
-                                                : 'bg-orange-50 text-orange-700'
+                                            ? 'bg-purple-50 text-purple-700'
+                                            : 'bg-orange-50 text-orange-700'
                                             }`}>
                                             {pkg.type}
                                         </span>

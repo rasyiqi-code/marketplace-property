@@ -1,3 +1,5 @@
+import FooterSettingsForm from './FooterSettingsForm';
+
 export default function AdminSettingsPage() {
     return (
         <div className="space-y-6">
@@ -14,7 +16,7 @@ export default function AdminSettingsPage() {
                         <input
                             type="text"
                             defaultValue="ProEstate Marketplace"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none text-gray-900"
                         />
                     </div>
                     <div>
@@ -22,10 +24,20 @@ export default function AdminSettingsPage() {
                         <input
                             type="email"
                             defaultValue="support@proestate.com"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none text-gray-900"
                         />
                     </div>
                 </form>
+                <div className="pt-4">
+                    <button className="px-6 py-2 bg-primary text-white rounded-lg font-bold hover:bg-primary/90 transition-colors">
+                        Simpan Perubahan
+                    </button>
+                </div>
+            </div>
+
+            <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm max-w-2xl">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Pengaturan Footer</h3>
+                <FooterSettingsForm />
             </div>
 
             <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm max-w-2xl">
@@ -40,12 +52,6 @@ export default function AdminSettingsPage() {
                         <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                     </label>
                 </div>
-            </div>
-
-            <div className="pt-4">
-                <button className="px-6 py-2 bg-primary text-white rounded-lg font-bold hover:bg-primary/90 transition-colors">
-                    Simpan Perubahan
-                </button>
             </div>
         </div>
     );

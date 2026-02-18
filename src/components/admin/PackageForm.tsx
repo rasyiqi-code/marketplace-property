@@ -5,7 +5,7 @@ import { ListingPackage } from '@prisma/client';
 import { X } from 'lucide-react';
 
 interface PackageFormProps {
-    initialData?: Partial<ListingPackage>;
+    initialData?: Omit<Partial<ListingPackage>, 'price'> & { price?: number };
     isOpen: boolean;
     onClose: () => void;
     onSuccess: () => void;

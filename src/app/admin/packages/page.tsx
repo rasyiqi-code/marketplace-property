@@ -11,9 +11,15 @@ export default async function AdminPackagesPage() {
     if (!user) redirect('/handler/sign-in');
 
     // Fetch packages from DB
-    const packages = await prisma.listingPackage.findMany({
+    const packagesRaw = await prisma.listingPackage.findMany({
         orderBy: { price: 'asc' }
     });
+
+    // Convert Decimal to number for serialization
+    const packages = packagesRaw.map(pkg => ({
+        ...pkg,
+        price: Number(pkg.price)
+    }));
 
     return (
         <div className="max-w-6xl mx-auto">

@@ -40,10 +40,37 @@ const FOOTER_LINKS = {
     ],
 };
 
+interface FooterSettings {
+    description: string;
+    socials: {
+        facebook: string;
+        twitter: string;
+        instagram: string;
+        linkedin: string;
+    };
+    contact: {
+        email: string;
+        phone: string;
+        address: string;
+    };
+}
+
 /**
  * FooterMUI - Footer menggunakan Material UI
  */
-export function FooterMUI() {
+export function FooterMUI({ settings }: { settings?: FooterSettings }) {
+    // Fallback data
+    const footerDescription = settings?.description || 'Platform properti terpercaya untuk menemukan rumah impian Anda. Jual, beli, dan sewa properti dengan mudah dan aman.';
+    const footerEmail = settings?.contact?.email || 'support@proestate.id';
+    const footerPhone = settings?.contact?.phone || '+62 21 5555 6666';
+    const footerAddress = settings?.contact?.address || 'Jakarta, Indonesia';
+    const footerSocials = settings?.socials || {
+        facebook: '#',
+        twitter: '#',
+        instagram: '#',
+        linkedin: '#',
+    };
+
     return (
         <Box
             component="footer"
@@ -75,22 +102,49 @@ export function FooterMUI() {
                             ProEstate
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2, maxWidth: 300 }}>
-                            Platform properti terpercaya untuk menemukan rumah impian Anda.
-                            Jual, beli, dan sewa properti dengan mudah dan aman.
+                            {footerDescription}
                         </Typography>
 
                         {/* Social Media */}
                         <Stack direction="row" spacing={1}>
-                            <IconButton size="small" color="primary">
+                            <IconButton
+                                size="small"
+                                color="primary"
+                                component="a"
+                                href={footerSocials.facebook}
+                                target="_blank"
+                                disabled={!footerSocials.facebook || footerSocials.facebook === '#'}
+                            >
                                 <Facebook />
                             </IconButton>
-                            <IconButton size="small" color="primary">
+                            <IconButton
+                                size="small"
+                                color="primary"
+                                component="a"
+                                href={footerSocials.twitter}
+                                target="_blank"
+                                disabled={!footerSocials.twitter || footerSocials.twitter === '#'}
+                            >
                                 <Twitter />
                             </IconButton>
-                            <IconButton size="small" color="primary">
+                            <IconButton
+                                size="small"
+                                color="primary"
+                                component="a"
+                                href={footerSocials.instagram}
+                                target="_blank"
+                                disabled={!footerSocials.instagram || footerSocials.instagram === '#'}
+                            >
                                 <Instagram />
                             </IconButton>
-                            <IconButton size="small" color="primary">
+                            <IconButton
+                                size="small"
+                                color="primary"
+                                component="a"
+                                href={footerSocials.linkedin}
+                                target="_blank"
+                                disabled={!footerSocials.linkedin || footerSocials.linkedin === '#'}
+                            >
                                 <LinkedIn />
                             </IconButton>
                         </Stack>
@@ -147,19 +201,19 @@ export function FooterMUI() {
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <Email fontSize="small" color="action" />
                                 <Typography variant="body2" color="text.secondary">
-                                    support@proestate.id
+                                    {footerEmail}
                                 </Typography>
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <Phone fontSize="small" color="action" />
                                 <Typography variant="body2" color="text.secondary">
-                                    +62 21 5555 6666
+                                    {footerPhone}
                                 </Typography>
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <LocationOn fontSize="small" color="action" />
                                 <Typography variant="body2" color="text.secondary">
-                                    Jakarta, Indonesia
+                                    {footerAddress}
                                 </Typography>
                             </Box>
                         </Stack>
