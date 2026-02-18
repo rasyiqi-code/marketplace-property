@@ -4,9 +4,12 @@ import { PropertyCardMUI } from '@/components/PropertyCardMUI';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import { Container } from '@mui/material';
 
 import { PropertyDetailTabs } from '@/components/PropertyDetailTabs';
 import { stackServerApp } from '@/lib/stack';
+import { DEFAULT_PROPERTY_IMAGE } from '@/lib/constants';
+import { InquiryForm } from '@/components/InquiryForm';
 
 export default async function PropertyDetailPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
@@ -22,17 +25,19 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
     // Use real images from propertyImages or fallback to imageUrl
     const displayImages = property.propertyImages.length > 0
         ? property.propertyImages.map((img: { url: string }) => img.url)
-        : [property.imageUrl, property.imageUrl, property.imageUrl, property.imageUrl, property.imageUrl];
+        : [property.imageUrl || DEFAULT_PROPERTY_IMAGE];
 
     // Ensure we have at least 5 elements for the grid layout
     const galleryImages = [...displayImages];
     while (galleryImages.length < 5) {
-        galleryImages.push(property.imageUrl);
+        galleryImages.push(property.imageUrl || DEFAULT_PROPERTY_IMAGE);
     }
 
     return (
         <div className="min-h-screen bg-white pb-20 font-sans">
-            <main className="container pt-3 px-4">
+            <Container maxWidth="lg" component="main" sx={{ pt: 3, px: 2 }}>
+                {/* Breadcrumbs */}
+                {/* ... existing breadcrumbs content ... */}
                 {/* Breadcrumbs */}
                 <div className="text-sm text-gray-500 mb-4 flex items-center gap-2">
                     <Link href="/" className="hover:text-primary">Beranda</Link>
@@ -155,6 +160,11 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
                                     </p>
                                 </div>
                             </div>
+
+                            {/* Inquiry Form */}
+                            <div className="mt-6">
+                                <InquiryForm propertyId={property.id} propertyTitle={property.title} />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -170,7 +180,7 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
                         </div>
                     </div>
                 )}
-            </main>
+            </Container>
         </div>
     );
 }

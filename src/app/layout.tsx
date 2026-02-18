@@ -6,6 +6,7 @@ import { StackProvider, StackTheme } from "@stackframe/stack";
 import { stackServerApp } from "@/lib/stack";
 import Script from 'next/script';
 import { CheckoutProvider } from '@/components/providers/CheckoutProvider';
+import { Toaster } from 'sonner';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 const outfit = Outfit({ subsets: ['latin'], variable: '--font-heading' });
@@ -34,6 +35,7 @@ export default function RootLayout({
             <ThemeRegistry>
               <CheckoutProvider>
                 {children}
+                <Toaster position="top-right" richColors />
               </CheckoutProvider>
             </ThemeRegistry>
           </StackTheme>

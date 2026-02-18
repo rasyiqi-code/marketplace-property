@@ -1,18 +1,15 @@
 import { stackServerApp } from '@/lib/stack';
 import { NavbarMUI } from '@/components/NavbarMUI';
-import { FooterMUI } from '@/components/FooterMUI';
+import { FooterMUI, FooterSettings } from '@/components/FooterMUI';
 import { Box } from '@mui/material';
 import prisma from '@/lib/prisma';
+import PushNotificationManager from '@/components/PushNotificationManager';
 
 /**
  * PublicLayout - Layout untuk halaman publik
  * Menggunakan NavbarMUI dan FooterMUI dari Material UI
  */
-export default async function PublicLayout({
-    children,
-}: Readonly<{
-    children: React.ReactNode;
-}>) {
+export default async function PublicLayout({ children }: { children: React.ReactNode }) {
     // Ambil user dari Stack Auth
     const user = await stackServerApp.getUser();
 
@@ -35,7 +32,8 @@ export default async function PublicLayout({
             <Box component="main" sx={{ flexGrow: 1 }}>
                 {children}
             </Box>
-            <FooterMUI settings={footerSettings?.value as any} />
+            <PushNotificationManager />
+            <FooterMUI settings={(footerSettings?.value as unknown) as FooterSettings} />
         </Box>
     );
 }

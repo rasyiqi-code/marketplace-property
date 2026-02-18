@@ -1,6 +1,5 @@
 
 import prisma from '@/lib/prisma';
-import { stackServerApp } from '@/lib/stack';
 
 export interface HomepageStats {
     activeListings: number;

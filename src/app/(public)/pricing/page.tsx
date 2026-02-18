@@ -1,7 +1,6 @@
 import { prisma } from '@/lib/db';
 import { ListingPackage } from '@prisma/client';
 import { stackServerApp } from '@/lib/stack';
-import Link from 'next/link';
 import { CheckoutButton } from '@/components/payment/CheckoutButton';
 
 export default async function PricingPage() {

@@ -1,32 +1,24 @@
-import { stackServerApp } from '@/lib/stack';
+import { requireAdmin } from '@/lib/stack';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 /**
  * AdminLayout - Layout untuk admin dashboard
- * Menggunakan Stack Auth untuk autentikasi
- * 
- * TODO: Implementasi role checking melalui Stack Auth teams/permissions
- * Saat ini hanya memeriksa autentikasi
+ * Menggunakan Stack Auth untuk autentikasi dan otorisasi
  */
 export default async function AdminLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    const user = await stackServerApp.getUser();
-
-    // Redirect ke login jika belum autentikasi
-    if (!user) {
-        redirect('/handler/sign-in');
-    }
-
-    // Pengecekan role ADMIN
-    const adminIds = process.env.ADMIN_IDS?.split(',') || [];
-    const isBypassAdmin = adminIds.includes(user.id);
-
-    // @ts-expect-error - Menangani custom metadata atau field role dari Stack Auth
-    if (user.role !== 'ADMIN' && user.metadata?.role !== 'ADMIN' && !isBypassAdmin) {
+    let user;
+    try {
+        user = await requireAdmin();
+    } catch (error) {
+        if (error instanceof Error && error.message === 'UNAUTHORIZED') {
+            redirect('/handler/sign-in');
+        }
+        // Jika FORBIDDEN atau error lainnya
         redirect('/');
     }
 
@@ -56,6 +48,18 @@ export default async function AdminLayout({
                     </Link>
                     <Link href="/admin/packages" className="flex items-center px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white font-medium rounded-lg transition-colors">
                         📦 Paket Listing
+                    </Link>
+                    <Link href="/admin/inquiries" className="flex items-center px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white font-medium rounded-lg transition-colors">
+                        📩 Inquiries
+                    </Link>
+                    <Link href="/admin/leads" className="flex items-center px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white font-medium rounded-lg transition-colors">
+                        ❤️ Leads
+                    </Link>
+                    <Link href="/admin/orders" className="flex items-center px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white font-medium rounded-lg transition-colors">
+                        💳 Orders
+                    </Link>
+                    <Link href="/admin/notifications" className="flex items-center px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white font-medium rounded-lg transition-colors">
+                        🔔 Notifikasi
                     </Link>
                 </div>
 

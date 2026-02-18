@@ -14,7 +14,6 @@ test.describe('Property Details', () => {
         const propertyCard = page.locator('a[href^="/jual/"], a[href^="/sewa/"], a[href^="/property/"]').first();
 
         if (await propertyCard.isVisible()) {
-            const href = await propertyCard.getAttribute('href');
             await propertyCard.click();
 
             // 3. Verify Navigation

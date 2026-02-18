@@ -1,8 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useActionState } from 'react';
+import { updateFooterSettings } from '@/lib/actions/setting';
+import { Alert, Button, CircularProgress } from '@mui/material';
+import { Save } from 'lucide-react';
 
-interface FooterSettings {
+export interface FooterSettings {
     description: string;
     socials: {
         facebook: string;
@@ -32,66 +35,32 @@ const DEFAULT_SETTINGS: FooterSettings = {
     },
 };
 
-export default function FooterSettingsForm() {
-    const [settings, setSettings] = useState<FooterSettings>(DEFAULT_SETTINGS);
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+interface FooterSettingsFormProps {
+    initialSettings?: FooterSettings | null;
+}
 
-    useEffect(() => {
-        fetchSettings();
-    }, []);
+export default function FooterSettingsForm({ initialSettings }: FooterSettingsFormProps) {
+    const settings = initialSettings || DEFAULT_SETTINGS;
 
-    const fetchSettings = async () => {
-        try {
-            const res = await fetch('/api/admin/settings?key=footer_settings');
-            const data = await res.json();
-            if (data && data.value) {
-                setSettings(data.value);
-            }
-        } catch (error) {
-            console.error('Failed to fetch settings:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    // Using simple form action without complex state management for inputs since we rely on native form behavior or detailed state if needed.
+    // However, to make it interactive with "value" attributes, we need state. 
+    // Or we can just use "defaultValue" which is simpler for this case.
 
-    const handleSave = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setSaving(true);
-        setMessage(null);
-
-        try {
-            const res = await fetch('/api/admin/settings', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    key: 'footer_settings',
-                    value: settings,
-                }),
-            });
-
-            if (res.ok) {
-                setMessage({ type: 'success', text: 'Pengaturan footer berhasil disimpan!' });
-            } else {
-                const data = await res.json();
-                setMessage({ type: 'error', text: data.error || 'Gagal menyimpan pengaturan' });
-            }
-        } catch (error) {
-            setMessage({ type: 'error', text: 'Terjadi kesalahan sistem' });
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    if (loading) return <div className="text-gray-500">Memuat pengaturan...</div>;
+    // @ts-expect-error - useActionState type mismatch with server action return type
+    const [state, formAction, isPending] = useActionState(updateFooterSettings, {});
 
     return (
-        <form onSubmit={handleSave} className="space-y-6">
-            {message && (
-                <div className={`p-4 rounded-lg ${message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                    {message.text}
-                </div>
+        <form action={formAction} className="space-y-6">
+            {state.success && (
+                <Alert severity="success" sx={{ mb: 2 }}>
+                    {state.message}
+                </Alert>
+            )}
+
+            {state.error && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                    {state.error}
+                </Alert>
             )}
 
             <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
@@ -100,8 +69,8 @@ export default function FooterSettingsForm() {
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Deskripsi Footer</label>
                         <textarea
-                            value={settings.description}
-                            onChange={(e) => setSettings({ ...settings, description: e.target.value })}
+                            name="about"
+                            defaultValue={settings.description}
                             rows={3}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none text-gray-900"
                         />
@@ -116,23 +85,17 @@ export default function FooterSettingsForm() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Facebook</label>
                         <input
                             type="text"
-                            value={settings.socials.facebook}
-                            onChange={(e) => setSettings({
-                                ...settings,
-                                socials: { ...settings.socials, facebook: e.target.value }
-                            })}
+                            name="facebook"
+                            defaultValue={settings.socials?.facebook}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none text-gray-900"
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Twitter</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Twitter / X</label>
                         <input
                             type="text"
-                            value={settings.socials.twitter}
-                            onChange={(e) => setSettings({
-                                ...settings,
-                                socials: { ...settings.socials, twitter: e.target.value }
-                            })}
+                            name="twitter"
+                            defaultValue={settings.socials?.twitter}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none text-gray-900"
                         />
                     </div>
@@ -140,11 +103,8 @@ export default function FooterSettingsForm() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Instagram</label>
                         <input
                             type="text"
-                            value={settings.socials.instagram}
-                            onChange={(e) => setSettings({
-                                ...settings,
-                                socials: { ...settings.socials, instagram: e.target.value }
-                            })}
+                            name="instagram"
+                            defaultValue={settings.socials?.instagram}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none text-gray-900"
                         />
                     </div>
@@ -152,11 +112,8 @@ export default function FooterSettingsForm() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn</label>
                         <input
                             type="text"
-                            value={settings.socials.linkedin}
-                            onChange={(e) => setSettings({
-                                ...settings,
-                                socials: { ...settings.socials, linkedin: e.target.value }
-                            })}
+                            name="linkedin"
+                            defaultValue={settings.socials?.linkedin}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none text-gray-900"
                         />
                     </div>
@@ -170,11 +127,8 @@ export default function FooterSettingsForm() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Email Dukungan</label>
                         <input
                             type="email"
-                            value={settings.contact.email}
-                            onChange={(e) => setSettings({
-                                ...settings,
-                                contact: { ...settings.contact, email: e.target.value }
-                            })}
+                            name="email"
+                            defaultValue={settings.contact?.email}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none text-gray-900"
                         />
                     </div>
@@ -182,11 +136,8 @@ export default function FooterSettingsForm() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Nomor Telepon</label>
                         <input
                             type="text"
-                            value={settings.contact.phone}
-                            onChange={(e) => setSettings({
-                                ...settings,
-                                contact: { ...settings.contact, phone: e.target.value }
-                            })}
+                            name="phone"
+                            defaultValue={settings.contact?.phone}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none text-gray-900"
                         />
                     </div>
@@ -194,11 +145,8 @@ export default function FooterSettingsForm() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Alamat Kantor</label>
                         <input
                             type="text"
-                            value={settings.contact.address}
-                            onChange={(e) => setSettings({
-                                ...settings,
-                                contact: { ...settings.contact, address: e.target.value }
-                            })}
+                            name="address"
+                            defaultValue={settings.contact?.address}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 outline-none text-gray-900"
                         />
                     </div>
@@ -206,13 +154,15 @@ export default function FooterSettingsForm() {
             </div>
 
             <div className="pt-4">
-                <button
+                <Button
                     type="submit"
-                    disabled={saving}
-                    className="px-6 py-2 bg-primary text-white rounded-lg font-bold hover:bg-primary/90 transition-colors disabled:opacity-50"
+                    variant="contained"
+                    disabled={isPending}
+                    startIcon={isPending ? <CircularProgress size={18} color="inherit" /> : <Save size={18} />}
+                    sx={{ px: 4, py: 1.5, fontWeight: 'bold' }}
                 >
-                    {saving ? 'Menyimpan...' : 'Simpan Pengaturan Footer'}
-                </button>
+                    {isPending ? 'Menyimpan...' : 'Simpan Pengaturan Footer'}
+                </Button>
             </div>
         </form>
     );

@@ -1,6 +1,6 @@
 import { stackServerApp } from '@/lib/stack';
 import { NavbarMUI, NavbarUser } from '@/components/NavbarMUI';
-import { FooterMUI } from '@/components/FooterMUI';
+import { FooterMUI, FooterSettings } from '@/components/FooterMUI';
 import { UserSidebar } from '@/components/UserSidebar';
 import { Box, Container, Grid } from '@mui/material';
 import { getCurrentUserStatus } from '@/lib/data/users';
@@ -49,7 +49,7 @@ export default async function UserLayout({
                 </Grid>
             </Container>
 
-            <FooterMUI settings={footerSettings?.value as any} />
+            <FooterMUI settings={(footerSettings?.value as unknown) as FooterSettings} />
         </Box>
     );
 }

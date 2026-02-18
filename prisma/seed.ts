@@ -240,6 +240,7 @@ async function main() {
             await prisma.property.create({
                 data: {
                     ...prop,
+                    images: '', // Kosongkan agar pakai fallback (user akan unggah manual)
                     userId: agentUser.id,
                 },
             });

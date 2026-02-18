@@ -122,8 +122,8 @@ export function PackageForm({ initialData, isOpen, onClose, onSuccess }: Package
                                 type="number"
                                 required
                                 min="0"
-                                value={formData.price}
-                                onChange={(e) => setFormData({ ...formData, price: parseInt(e.target.value) })}
+                                value={formData.price.toString()}
+                                onChange={(e) => setFormData({ ...formData, price: e.target.value === '' ? 0 : parseInt(e.target.value) })}
                                 className="w-full px-3 py-2 border rounded-lg focus:ring-primary focus:border-primary"
                             />
                         </div>
@@ -133,8 +133,8 @@ export function PackageForm({ initialData, isOpen, onClose, onSuccess }: Package
                                 type="number"
                                 required
                                 min="1"
-                                value={formData.listingLimit}
-                                onChange={(e) => setFormData({ ...formData, listingLimit: parseInt(e.target.value) })}
+                                value={formData.listingLimit.toString()}
+                                onChange={(e) => setFormData({ ...formData, listingLimit: e.target.value === '' ? 0 : parseInt(e.target.value) })}
                                 className="w-full px-3 py-2 border rounded-lg focus:ring-primary focus:border-primary"
                             />
                         </div>
@@ -147,8 +147,8 @@ export function PackageForm({ initialData, isOpen, onClose, onSuccess }: Package
                                 type="number"
                                 required
                                 min="1"
-                                value={formData.durationDays}
-                                onChange={(e) => setFormData({ ...formData, durationDays: parseInt(e.target.value) })}
+                                value={formData.durationDays.toString()}
+                                onChange={(e) => setFormData({ ...formData, durationDays: e.target.value === '' ? 0 : parseInt(e.target.value) })}
                                 className="w-full px-3 py-2 border rounded-lg focus:ring-primary focus:border-primary"
                             />
                         </div>

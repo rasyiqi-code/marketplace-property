@@ -17,9 +17,10 @@ const PropertyMapSearch = dynamic(() => import('@/components/PropertyMapSearch')
 
 interface SearchResultsProps {
     properties: PropertyDTO[];
+    wishlistedPropertyIds?: string[];
 }
 
-export function SearchResults({ properties }: SearchResultsProps) {
+export function SearchResults({ properties, wishlistedPropertyIds = [] }: SearchResultsProps) {
     const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
 
     return (
@@ -52,7 +53,11 @@ export function SearchResults({ properties }: SearchResultsProps) {
                     {properties.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                             {properties.map((property) => (
-                                <PropertyCardMUI key={property.id} property={property} />
+                                <PropertyCardMUI
+                                    key={property.id}
+                                    property={property}
+                                    isWishlisted={wishlistedPropertyIds.includes(property.id)}
+                                />
                             ))}
                         </div>
                     ) : (

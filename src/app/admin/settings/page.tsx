@@ -1,6 +1,9 @@
-import FooterSettingsForm from './FooterSettingsForm';
+import FooterSettingsForm, { FooterSettings } from '@/components/admin/settings/FooterSettingsForm';
+import { getFooterSettings } from '@/lib/actions/setting';
 
-export default function AdminSettingsPage() {
+export default async function AdminSettingsPage() {
+    const footerSettings = await getFooterSettings() as FooterSettings | null;
+
     return (
         <div className="space-y-6">
             <div>
@@ -37,7 +40,7 @@ export default function AdminSettingsPage() {
 
             <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm max-w-2xl">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Pengaturan Footer</h3>
-                <FooterSettingsForm />
+                <FooterSettingsForm initialSettings={footerSettings} />
             </div>
 
             <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm max-w-2xl">

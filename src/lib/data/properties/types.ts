@@ -92,6 +92,7 @@ export interface PropertyInput {
 export interface SearchFilters {
     query?: string;
     type?: string;
+    location?: string;
     minPrice?: number;
     maxPrice?: number;
     status?: string;

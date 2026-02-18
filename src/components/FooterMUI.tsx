@@ -40,7 +40,7 @@ const FOOTER_LINKS = {
     ],
 };
 
-interface FooterSettings {
+export interface FooterSettings {
     description: string;
     socials: {
         facebook: string;

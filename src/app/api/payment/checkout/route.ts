@@ -1,16 +1,20 @@
 import { stackServerApp } from '@/lib/stack';
 import { prisma } from '@/lib/db';
-import { snap } from '@/lib/midtrans';
+import { createDokuCheckoutSession } from '@/lib/doku';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
     const user = await stackServerApp.getUser();
     if (!user) {
-        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     try {
-        const { packageId } = await request.json();
+        const { packageId, paymentMethod } = await request.json();
+
+        if (!packageId || !paymentMethod) {
+            return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+        }
 
         // 1. Get Package Details
         const listingPackage = await prisma.listingPackage.findUnique({
@@ -18,7 +22,7 @@ export async function POST(request: Request) {
         });
 
         if (!listingPackage) {
-            return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+            return NextResponse.json({ error: "Package not found" }, { status: 404 });
         }
 
         // 2. Create Order in DB
@@ -28,43 +32,53 @@ export async function POST(request: Request) {
                 packageId: listingPackage.id,
                 amount: listingPackage.price,
                 status: 'PENDING',
+                paymentMethod: paymentMethod, // 'DOKU' or 'MANUAL'
             }
         });
 
-        // 3. Request Midtrans Snap Token
-        const parameter = {
-            transaction_details: {
-                order_id: order.id,
-                gross_amount: Number(listingPackage.price),
-            },
-            customer_details: {
-                first_name: user.displayName || 'User',
-                email: user.primaryEmail || '',
-            },
-            item_details: [{
-                id: listingPackage.id,
-                price: Number(listingPackage.price),
-                quantity: 1,
-                name: listingPackage.name,
-            }],
-        };
+        // 3. Handle Payment Method
+        if (paymentMethod === 'DOKU') {
+            try {
+                const dokuSession = await createDokuCheckoutSession({
+                    id: order.id,
+                    amount: Number(listingPackage.price),
+                    customerName: user.displayName || 'User',
+                    customerEmail: user.primaryEmail || '',
+                    items: [{
+                        id: listingPackage.id,
+                        name: listingPackage.name,
+                        price: Number(listingPackage.price),
+                        quantity: 1
+                    }]
+                });
 
-        const transaction = await snap.createTransaction(parameter);
+                // Update order with reference from DOKU if any (DOKU Checkout returns an URL usually)
+                await prisma.order.update({
+                    where: { id: order.id },
+                    data: {
+                        referenceNo: dokuSession.response.payment.payment_url, // For DOKU Checkout, payment_url is the target
+                        snapUrl: dokuSession.response.payment.payment_url // Keep snapUrl for UI compatibility if needed
+                    }
+                });
 
-        // 4. Update Order with Snap Token
-        const updatedOrder = await prisma.order.update({
-            where: { id: order.id },
-            data: {
-                snapToken: transaction.token,
-                snapUrl: transaction.redirect_url,
+                return NextResponse.json({
+                    orderId: order.id,
+                    paymentUrl: dokuSession.response.payment.payment_url
+                });
+            } catch (dokuError) {
+                console.error('DOKU Session Error:', dokuError);
+                return NextResponse.json({ error: "Gagal menghubungkan ke layanan pembayaran DOKU" }, { status: 500 });
             }
-        });
+        }
 
-        return NextResponse.json(updatedOrder);
-    } catch (error) {
-        console.error('Error in checkout:', error);
+        // For MANUAL
         return NextResponse.json({
-            error: error instanceof Error ? error.message : 'Internal Server Error'
-        }, { status: 500 });
+            orderId: order.id,
+            message: "Order manual berhasil dibuat. Silakan transfer ke rekening yang tersedia."
+        });
+
+    } catch (error) {
+        console.error('Checkout error:', error);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }

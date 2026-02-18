@@ -39,6 +39,21 @@ model User {
   listingLimit    Int       @default(1)    // Kuota dasar untuk user baru
   packageExpiry   DateTime?                // Masa berlaku paket (untuk AGENT/AGENCY)
   orders          Order[]
+
+  // === NOTIFICATIONS ===
+  pushSubscriptions PushSubscription[]
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 
@@ -169,15 +184,19 @@ model ListingPackage {
 }
 
 model Order {
-  id          String   @id @default(cuid())
-  userId      String
-  packageId   String
-  amount      Decimal
-  status      String   @default("PENDING") // PENDING | PAID | EXPIRED | CANCELLED
-  snapToken   String?  // Untuk Midtrans Snap API
-  snapUrl     String?  // URL redirect pembayaran
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  userId        String
+  packageId     String
+  amount        Decimal
+  status        String   @default("PENDING") // PENDING | PAID | EXPIRED | CANCELLED | CHALLENGE
+  paymentMethod String   @default("DOKU")    // DOKU | MANUAL
+  paymentProof  String?  // Untuk bukti transfer manual
+  referenceNo   String?  // Nomor referensi transaksi dari DOKU atau user
+  adminNote     String?  // Catatan admin untuk konfirmasi manual
+  snapToken     String?  // Deprecated/Legacy: Biarkan untuk kompatibilitas jika ada data lama, atau hapus jika DB fresh. Saya biarkan dulu.
+  snapUrl       String?  // Deprecated
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   package     ListingPackage @relation(fields: [packageId], references: [id])

@@ -1,47 +1,18 @@
-import { stackServerApp } from '@/lib/stack';
+import { stackServerApp, isUserAdmin } from '@/lib/stack';
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
-
-// GET /api/admin/packages - List all packages
-export async function GET() {
-    const user = await stackServerApp.getUser();
-
-    // Basic Auth Check (In production, use robust middleware/CASL)
-    if (!user) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Check Admin Role
-    const dbUser = await prisma.user.findUnique({
-        where: { id: user.id },
-        select: { role: true }
-    });
-
-    if (dbUser?.role !== 'ADMIN') {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const packages = await prisma.listingPackage.findMany({
-        orderBy: { price: 'asc' }
-    });
-
-    return NextResponse.json(packages);
-}
 
 // POST /api/admin/packages - Create new package
 export async function POST(request: Request) {
     const user = await stackServerApp.getUser();
 
+    // Auth Check
     if (!user) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const dbUser = await prisma.user.findUnique({
-        where: { id: user.id },
-        select: { role: true }
-    });
-
-    if (dbUser?.role !== 'ADMIN') {
+    const isAdmin = await isUserAdmin();
+    if (!isAdmin) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -49,9 +20,9 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { name, description, price, listingLimit, durationDays, type } = body;
 
-        // Simple validation
-        if (!name || !price || !listingLimit) {
-            return NextResponse.json({ error: "Name, price, and limit are required" }, { status: 400 });
+        // Basic validation
+        if (!name || price === undefined || !listingLimit || !durationDays || !type) {
+            return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
         const newPackage = await prisma.listingPackage.create({
@@ -60,8 +31,8 @@ export async function POST(request: Request) {
                 description,
                 price: Number(price),
                 listingLimit: Number(listingLimit),
-                durationDays: Number(durationDays) || 30,
-                type: type || 'SUBSCRIPTION'
+                durationDays: Number(durationDays),
+                type
             }
         });
 

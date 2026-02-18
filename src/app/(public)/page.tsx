@@ -7,7 +7,7 @@ import {
   getFeaturedProperties,
   getPopularProperties,
   getNewProperties,
-} from '@/lib/data/properties/queries';
+} from '@/lib/data/properties';
 import {
   getHomepageStats,
   getCategoryCounts,

@@ -1,6 +1,9 @@
 'use client';
 
 import * as React from 'react';
+import { toggleWishlist } from '@/lib/actions/wishlist';
+import { useOptimistic, useTransition } from 'react';
+import { toast } from 'sonner';
 import {
     Card,
     CardContent,
@@ -21,17 +24,17 @@ import {
     SquareFoot,
     LocationOn,
     LocalFireDepartment,
-    Star,
-    WorkspacePremium
+    Star
 } from '@mui/icons-material';
 import Link from 'next/link';
 import type { PropertyDTO } from '@/lib/data/properties';
+import { DEFAULT_PROPERTY_IMAGE } from '@/lib/constants';
 
 interface PropertyCardMUIProps {
     property: PropertyDTO;
     showWishlist?: boolean;
     isWishlisted?: boolean;
-    onWishlistToggle?: (id: string) => void;
+    // onWishlistToggle removed as it's handled internally now
 }
 
 /**
@@ -41,14 +44,33 @@ interface PropertyCardMUIProps {
 export function PropertyCardMUI({
     property,
     showWishlist = true,
-    isWishlisted = false,
-    onWishlistToggle,
+    isWishlisted: initialIsWishlisted = false,
 }: PropertyCardMUIProps) {
-    const handleWishlistClick = (e: React.MouseEvent) => {
+    const [, startTransition] = useTransition();
+    const [optimisticIsWishlisted, setOptimisticIsWishlisted] = useOptimistic(
+        initialIsWishlisted,
+        (state, newState: boolean) => newState
+    );
+
+    const handleWishlistClick = async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        onWishlistToggle?.(property.id);
+
+        const newState = !optimisticIsWishlisted;
+
+        startTransition(async () => {
+            setOptimisticIsWishlisted(newState);
+            const result = await toggleWishlist(property.id);
+            if (result.success) {
+                toast.success(result.message);
+            } else {
+                toast.error(result.message);
+                // Revert if failed (though useOptimistic handles UI, we might want to force sync or show error)
+            }
+        });
     };
+
+    const isLiked = optimisticIsWishlisted;
 
     return (
         <Card
@@ -63,6 +85,7 @@ export function PropertyCardMUI({
                 },
             }}
         >
+
             {property.featured && (
                 <Box
                     sx={{
@@ -98,7 +121,7 @@ export function PropertyCardMUI({
                 <Box sx={{ position: 'relative' }}>
                     <CardMedia
                         component="img"
-                        image={property.imageUrl || '/images/placeholder.jpg'}
+                        image={property.imageUrl || DEFAULT_PROPERTY_IMAGE}
                         alt={property.title}
                         sx={{
                             aspectRatio: '16/9',
@@ -144,7 +167,7 @@ export function PropertyCardMUI({
 
                     {/* Wishlist Button */}
                     {showWishlist && (
-                        <Tooltip title={isWishlisted ? 'Hapus dari favorit' : 'Simpan ke favorit'}>
+                        <Tooltip title={isLiked ? 'Hapus dari favorit' : 'Simpan ke favorit'}>
                             <IconButton
                                 onClick={handleWishlistClick}
                                 sx={{
@@ -158,7 +181,7 @@ export function PropertyCardMUI({
                                 }}
                                 size="small"
                             >
-                                {isWishlisted ? (
+                                {isLiked ? (
                                     <Favorite sx={{ color: 'secondary.main' }} />
                                 ) : (
                                     <FavoriteBorder sx={{ color: 'grey.600' }} />

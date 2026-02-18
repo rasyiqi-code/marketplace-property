@@ -31,7 +31,7 @@ test.describe('Navigation & Search', () => {
         await page.goto('/', { timeout: 60000 });
 
         // Look for a link or tab saying "Dijual"
-        const dijualLink = page.getByRole('tab', { name: /Popular/i }).first(); // Homepage has tabs "Featured", "Popular", "New"
+        const dijualLink = page.getByRole('tab', { name: /Terpopuler/i }).first(); // Homepage has tabs "Pilihan Kami", "Terpopuler", "Terbaru"
 
         if (await dijualLink.isVisible()) {
             await dijualLink.click();

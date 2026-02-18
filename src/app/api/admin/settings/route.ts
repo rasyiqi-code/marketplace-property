@@ -46,11 +46,12 @@ export async function PATCH(request: Request) {
         });
 
         return NextResponse.json(setting);
-    } catch (error: any) {
-        if (error.message === 'UNAUTHORIZED') {
+    } catch (error: unknown) {
+        const err = error as Error;
+        if (err.message === 'UNAUTHORIZED') {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
-        if (error.message === 'FORBIDDEN') {
+        if (err.message === 'FORBIDDEN') {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 

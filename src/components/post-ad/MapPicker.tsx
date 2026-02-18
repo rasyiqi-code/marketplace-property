@@ -51,7 +51,7 @@ export default function MapPicker({ lat, lng, mapsEmbed, onChange }: MapPickerPr
                 }
             }
         }
-    }, []); // Run ONLY once on mount
+    }, [extractCoords, inputValue, lat, lng, onChange, previewSrc]);
 
     const handleInputChange = (val: string) => {
         setInputValue(val);

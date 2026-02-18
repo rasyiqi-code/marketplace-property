@@ -35,7 +35,7 @@ export function PropertyTable({ properties: initialProperties }: PropertyTablePr
         }
     };
 
-    const handleUpdateStatus = async (id: string, key: 'priority' | 'urgency' | 'featured', value: any) => {
+    const handleUpdateStatus = async (id: string, key: 'priority' | 'urgency' | 'featured', value: string | number | boolean) => {
         // Optimistic update
         setProperties((prev) => prev.map((p) =>
             p.id === id ? { ...p, [key]: value } : p

@@ -1,4 +1,4 @@
-import { stackServerApp } from '@/lib/stack';
+import { stackServerApp, isUserAdmin } from '@/lib/stack';
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
@@ -12,12 +12,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const dbUser = await prisma.user.findUnique({
-        where: { id: user.id },
-        select: { role: true }
-    });
-
-    if (dbUser?.role !== 'ADMIN') {
+    const isAdmin = await isUserAdmin();
+    if (!isAdmin) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -53,12 +49,8 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const dbUser = await prisma.user.findUnique({
-        where: { id: user.id },
-        select: { role: true }
-    });
-
-    if (dbUser?.role !== 'ADMIN') {
+    const isAdmin = await isUserAdmin();
+    if (!isAdmin) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
