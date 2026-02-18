@@ -65,9 +65,10 @@ export default function SendPersonalNotificationDialog({
                 toast.success('Notifikasi berhasil dikirim!');
                 handleClose();
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error sending notification:', error);
-            toast.error(error.message || 'Gagal mengirim notifikasi.');
+            const errorMessage = error instanceof Error ? error.message : 'Gagal mengirim notifikasi.';
+            toast.error(errorMessage);
         } finally {
             setIsLoading(false);
         }

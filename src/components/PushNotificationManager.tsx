@@ -1,11 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@mui/material';
 import { NotificationsActive, NotificationsOff } from '@mui/icons-material';
 import { toast } from 'sonner';
-
-const PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
 function urlBase64ToUint8Array(base64String: string) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -26,43 +24,8 @@ export default function PushNotificationManager() {
     const [isSupported, setIsSupported] = useState(false);
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [subscription, setSubscription] = useState<PushSubscription | null>(null);
-    const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
 
-    useEffect(() => {
-        setIsSupported(typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window);
-
-        if (typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window) {
-            // Register SW
-            navigator.serviceWorker.register('/sw.js')
-                .then(reg => {
-                    setRegistration(reg);
-                    reg.pushManager.getSubscription()
-                        .then(sub => {
-                            if (sub) {
-                                setSubscription(sub);
-                                setIsSubscribed(true);
-                            } else {
-                                // Auto-prompt if not subscribed and permission is default
-                                if (Notification.permission === 'default') {
-                                    setTimeout(() => {
-                                        toast('Dapatkan Info Properti Terbaru', {
-                                            description: 'Aktifkan notifikasi untuk tidak ketinggalan update menarik.',
-                                            action: {
-                                                label: 'Aktifkan',
-                                                onClick: () => subscribeToPush()
-                                            },
-                                            duration: 8000,
-                                        });
-                                    }, 3000); // Delay 3s agar tidak kaget
-                                }
-                            }
-                        });
-                })
-                .catch(err => console.error('Service Worker registration failed:', err));
-        }
-    }, []);
-
-    const subscribeToPush = async () => {
+    const subscribeToPush = useCallback(async () => {
         if (!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) {
             toast.error('Gagal: Public Key VAPID tidak ditemukan di environment variable.');
             console.error('Missing NEXT_PUBLIC_VAPID_PUBLIC_KEY');
@@ -97,9 +60,9 @@ export default function PushNotificationManager() {
             console.error('Failed to subscribe:', error);
             toast.error('Gagal mengaktifkan notifikasi: ' + error);
         }
-    };
+    }, []);
 
-    const unsubscribeFromPush = async () => {
+    const unsubscribeFromPush = useCallback(async () => {
         if (!subscription) return;
 
         try {
@@ -112,7 +75,41 @@ export default function PushNotificationManager() {
             console.error('Failed to unsubscribe:', error);
             toast.error('Gagal menonaktifkan notifikasi.');
         }
-    };
+    }, [subscription]);
+
+    useEffect(() => {
+        const initPush = async () => {
+            const supported = typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window;
+            if (supported) {
+                setIsSupported(true);
+                try {
+                    const reg = await navigator.serviceWorker.register('/sw.js');
+                    const sub = await reg.pushManager.getSubscription();
+                    if (sub) {
+                        setSubscription(sub);
+                        setIsSubscribed(true);
+                    } else {
+                        if (Notification.permission === 'default') {
+                            setTimeout(() => {
+                                toast('Dapatkan Info Properti Terbaru', {
+                                    description: 'Aktifkan notifikasi untuk tidak ketinggalan update menarik.',
+                                    action: {
+                                        label: 'Aktifkan',
+                                        onClick: () => subscribeToPush()
+                                    },
+                                    duration: 8000,
+                                });
+                            }, 3000);
+                        }
+                    }
+                } catch (err) {
+                    console.error('Service Worker registration failed:', err);
+                }
+            }
+        };
+
+        initPush();
+    }, [subscribeToPush]);
 
     if (!isSupported) {
         return null; // Not supported

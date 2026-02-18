@@ -37,9 +37,10 @@ export default function SendNotificationForm() {
             setTitle('');
             setMessage('');
             setUrl('/');
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error sending notification:', error);
-            setLastResult({ success: false, error: error.message });
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            setLastResult({ success: false, error: errorMessage });
             toast.error('Gagal mengirim notifikasi.');
         } finally {
             setIsLoading(false);

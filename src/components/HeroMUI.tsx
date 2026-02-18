@@ -21,6 +21,17 @@ import {
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
+import {
+    List,
+    ListItem,
+    ListItemButton,
+    ListItemText,
+    ListItemAvatar,
+    Avatar,
+} from '@mui/material';
+import { searchProperties, SearchResult } from '@/lib/actions/live-search';
+import { useDebounce } from 'use-debounce';
+
 // Default images if no dynamic images are provided
 const DEFAULT_HERO_IMAGES = [
     '/images/hero-1.jpg',
@@ -44,7 +55,42 @@ export function HeroMUI({ heroImages = [] }: HeroMUIProps) {
 
     const [currentSlide, setCurrentSlide] = React.useState(0);
     const [searchQuery, setSearchQuery] = React.useState('');
+    const [debouncedQuery] = useDebounce(searchQuery, 300);
+    const [results, setResults] = React.useState<SearchResult[]>([]);
+    const [isLoading, setIsLoading] = React.useState(false);
+    const [showResults, setShowResults] = React.useState(false);
     const [propertyStatus, setPropertyStatus] = React.useState<PropertyStatus>('sale');
+
+    // Live Search Effect
+    React.useEffect(() => {
+        const performSearch = async () => {
+            if (debouncedQuery.length < 2) {
+                setResults([]);
+                return;
+            }
+
+            setIsLoading(true);
+            try {
+                const data = await searchProperties(debouncedQuery);
+                setResults(data);
+                setShowResults(true);
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        performSearch();
+    }, [debouncedQuery]);
+
+    // Close results when clicking outside (handled simply by specific actions for now, could add ClickAwayListener)
+    React.useEffect(() => {
+        const handleClickOutside = () => setShowResults(false);
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, []);
+
 
     // Auto-play slider
     React.useEffect(() => {
@@ -254,10 +300,15 @@ export function HeroMUI({ heroImages = [] }: HeroMUIProps) {
                         }}
                     >
                         <TextField
+                            id="hero-search-input"
                             fullWidth
                             placeholder="Lokasi, keyword, area, project, developer"
                             value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onChange={(e) => {
+                                setSearchQuery(e.target.value);
+                                // Reset results if query is cleared
+                                if (!e.target.value) setResults([]);
+                            }}
                             onKeyDown={handleKeyDown}
                             slotProps={{
                                 input: {
@@ -276,6 +327,73 @@ export function HeroMUI({ heroImages = [] }: HeroMUIProps) {
                                 },
                             }}
                         />
+
+                        {/* Live Search Results */}
+                        {showResults && (results.length > 0 || isLoading) && (
+                            <Paper
+                                elevation={5}
+                                sx={{
+                                    position: 'absolute',
+                                    top: '100%',
+                                    left: 0,
+                                    right: 0,
+                                    mt: 1,
+                                    zIndex: 50,
+                                    maxHeight: 400,
+                                    overflowY: 'auto',
+                                    borderRadius: 2,
+                                    bgcolor: 'background.paper',
+                                }}
+                            >
+                                <List sx={{ p: 0 }}>
+                                    {isLoading ? (
+                                        <ListItem>
+                                            <ListItemText primary="Mencari..." sx={{ textAlign: 'center', color: 'text.secondary' }} />
+                                        </ListItem>
+                                    ) : (
+                                        results.map((prop) => (
+                                            <ListItemButton
+                                                key={prop.id}
+                                                onClick={() => {
+                                                    router.push(`/${prop.status === 'sale' ? 'jual' : 'sewa'}/${prop.slug}`);
+                                                    setSearchQuery('');
+                                                    setResults([]);
+                                                }}
+                                                divider
+                                            >
+                                                <ListItemAvatar>
+                                                    <Avatar
+                                                        variant="rounded"
+                                                        src={prop.images ? prop.images.split(',')[0] : undefined}
+                                                        alt={prop.title}
+                                                        sx={{ width: 56, height: 56, mr: 2 }}
+                                                    />
+                                                </ListItemAvatar>
+                                                <ListItemText
+                                                    primary={
+                                                        <Typography variant="subtitle2" fontWeight="bold" noWrap>
+                                                            {prop.title}
+                                                        </Typography>
+                                                    }
+                                                    secondary={
+                                                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                                            <Typography variant="caption" color="text.secondary" noWrap>
+                                                                {prop.location}
+                                                            </Typography>
+                                                            <Typography variant="caption" color="primary.main" fontWeight="bold">
+                                                                {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(prop.price))}
+                                                            </Typography>
+                                                        </Box>
+                                                    }
+                                                />
+                                            </ListItemButton>
+                                        ))
+                                    )}
+                                </List>
+                            </Paper>
+                        )}
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2, width: '100%' }}>
                         <Button
                             variant="contained"
                             color="secondary"
@@ -285,6 +403,7 @@ export function HeroMUI({ heroImages = [] }: HeroMUIProps) {
                                 py: 1.5,
                                 fontWeight: 'bold',
                                 minWidth: { xs: '100%', md: 120 },
+                                width: { xs: '100%', md: 'auto' }
                             }}
                         >
                             Cari
