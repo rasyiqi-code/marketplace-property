@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { ArrowLeft, CheckCircle, XCircle, Clock, User, Building2 } from 'lucide-react';
 import { UpgradeRequestActions } from '@/components/admin/UpgradeRequestActions';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminUpgradeRequestsPage() {
     const requests = await (prisma.accountUpgradeRequest.findMany({
         include: {

@@ -2,6 +2,8 @@ import { getUsers } from '@/lib/data/users';
 import { UserTable } from '@/components/admin/UserTable';
 import { stackServerApp } from '@/lib/stack';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminUsersPage() {
     const users = await getUsers();
     const currentUser = await stackServerApp.getUser();
