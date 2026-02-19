@@ -2,6 +2,8 @@ import { stackServerApp, isUserAdmin } from '@/lib/stack';
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 // PATCH /api/admin/packages/[id] - Update package
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
     const user = await stackServerApp.getUser();
